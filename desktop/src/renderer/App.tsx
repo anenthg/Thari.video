@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import type { AppSettings } from './lib/types'
-import { initClient, resetClient } from './lib/supabase'
 import SetupWizard from './components/SetupWizard'
 import Provisioning from './components/Provisioning'
 import Layout from './components/Layout'
@@ -11,8 +10,7 @@ export default function App() {
 
   useEffect(() => {
     window.api.getSettings().then((s) => {
-      if (s.supabaseURL && s.serviceRoleKey && s.databasePassword) {
-        initClient(s.supabaseURL, s.serviceRoleKey)
+      if (s.firebaseProjectId && s.serviceAccountJson) {
         setSettings(s)
       } else if (s.isProvisioned) {
         // TODO: Remove — temp dev skip with no credentials
@@ -40,7 +38,7 @@ export default function App() {
     )
   }
 
-  const isConfigured = !!(settings.supabaseURL && settings.serviceRoleKey && settings.databasePassword)
+  const isConfigured = !!(settings.firebaseProjectId && settings.serviceAccountJson)
 
   if (isConfigured && !settings.isProvisioned) {
     return (
@@ -53,7 +51,6 @@ export default function App() {
         }}
         onDisconnect={() => {
           window.api.clearSettings()
-          resetClient()
           setSettings(null)
         }}
       />
@@ -65,7 +62,6 @@ export default function App() {
       settings={settings}
       onDisconnect={() => {
         window.api.clearSettings()
-        resetClient()
         setSettings(null)
       }}
       onReprovision={() => {

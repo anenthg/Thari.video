@@ -1,15 +1,16 @@
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import type { AppSettings } from '../lib/types'
 import Library from './Library'
 import Recording from './Recording'
 import Settings from './Settings'
+import { FolderIcon, RecordIcon, GearIcon } from './icons'
 
 type Tab = 'library' | 'record' | 'settings'
 
-const tabs: { id: Tab; label: string; icon: string }[] = [
-  { id: 'library', label: 'Library', icon: '📁' },
-  { id: 'record', label: 'Record', icon: '⏺' },
-  { id: 'settings', label: 'Settings', icon: '⚙️' },
+const tabs: { id: Tab; label: string; icon: ReactNode }[] = [
+  { id: 'library', label: 'Library', icon: <FolderIcon className="w-5 h-5" /> },
+  { id: 'record', label: 'Record', icon: <RecordIcon className="w-5 h-5" /> },
+  { id: 'settings', label: 'Settings', icon: <GearIcon className="w-5 h-5" /> },
 ]
 
 interface Props {
@@ -34,7 +35,7 @@ export default function Layout({ settings, onDisconnect, onReprovision }: Props)
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm transition-colors ${
               activeTab === tab.id
-                ? 'bg-zinc-700 text-white'
+                ? 'bg-zinc-700 text-[var(--crimson)]'
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
             }`}
           >

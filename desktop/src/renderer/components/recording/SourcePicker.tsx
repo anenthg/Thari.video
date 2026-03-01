@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { DesktopSource } from '../../lib/types'
+import { CameraIcon, CameraOffIcon, MicIcon, MicOffIcon } from '../icons'
 
 interface SourcePickerProps {
   sources: DesktopSource[]
@@ -33,23 +34,25 @@ export default function SourcePicker({
         <div className="flex gap-2">
           <button
             onClick={onToggleCamera}
-            className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+            title={enableCamera ? 'Camera on' : 'Camera off'}
+            className={`p-2 rounded-lg transition-colors ${
               enableCamera
-                ? 'bg-blue-600 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]'
+                : 'bg-[var(--crimson)]/20 text-[var(--crimson)]'
             }`}
           >
-            Camera {enableCamera ? 'ON' : 'OFF'}
+            {enableCamera ? <CameraIcon className="w-5 h-5" /> : <CameraOffIcon className="w-5 h-5" />}
           </button>
           <button
             onClick={onToggleMic}
-            className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+            title={enableMic ? 'Mic on' : 'Mic off'}
+            className={`p-2 rounded-lg transition-colors ${
               enableMic
-                ? 'bg-blue-600 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]'
+                : 'bg-[var(--crimson)]/20 text-[var(--crimson)]'
             }`}
           >
-            Mic {enableMic ? 'ON' : 'OFF'}
+            {enableMic ? <MicIcon className="w-5 h-5" /> : <MicOffIcon className="w-5 h-5" />}
           </button>
         </div>
       </div>
@@ -66,7 +69,7 @@ export default function SourcePicker({
           >
             Screens
             {tab === 'screens' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--crimson)] rounded-full" />
             )}
           </button>
         )}
@@ -81,7 +84,7 @@ export default function SourcePicker({
           >
             Windows
             {tab === 'windows' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--crimson)] rounded-full" />
             )}
           </button>
         )}
@@ -93,7 +96,7 @@ export default function SourcePicker({
             <button
               key={source.id}
               onClick={() => onSelect(source.id)}
-              className="rounded-lg border border-zinc-700 hover:border-blue-500 overflow-hidden transition-colors bg-zinc-900"
+              className="rounded-lg border border-zinc-700 hover:border-[var(--crimson)] overflow-hidden transition-colors bg-zinc-900"
             >
               <img
                 src={source.thumbnail}

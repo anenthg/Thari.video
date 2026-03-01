@@ -14,19 +14,10 @@ export default function Settings({ settings, onDisconnect, onReprovision }: Prop
       <div className="space-y-4 mb-8">
         <div>
           <label className="block text-sm text-zinc-400 mb-1">
-            Project URL
+            Firebase Project ID
           </label>
-          <p data-testid="settings-url" className="text-white">
-            {settings.supabaseURL}
-          </p>
-        </div>
-
-        <div>
-          <label className="block text-sm text-zinc-400 mb-1">
-            Project Ref
-          </label>
-          <p data-testid="settings-ref" className="text-white">
-            {settings.supabaseRef}
+          <p data-testid="settings-project-id" className="text-white">
+            {settings.firebaseProjectId}
           </p>
         </div>
 

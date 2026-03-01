@@ -11,15 +11,13 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.0",
-    "pg": "^8.19.0",
+    "firebase-admin": "^12.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@tailwindcss/vite": "^4.0.0",
-    "@types/pg": "^8.16.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.0.0",

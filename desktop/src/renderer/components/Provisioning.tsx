@@ -23,8 +23,8 @@ function StatusIcon({ status }: { status: StepStatus }) {
 
 export default function Provisioning({ settings, onComplete, onDisconnect }: Props) {
   const [steps, setSteps] = useState<ProvisioningStep[]>([
-    { id: 'tables', label: 'Creating database tables...', status: 'pending' },
-    { id: 'storage', label: 'Setting up storage bucket...', status: 'pending' },
+    { id: 'firestore', label: 'Verifying Firestore access...', status: 'pending' },
+    { id: 'storage', label: 'Verifying Storage bucket...', status: 'pending' },
   ])
   const [finished, setFinished] = useState(false)
   const [hasError, setHasError] = useState(false)
@@ -37,8 +37,8 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
 
     // Reset steps to pending
     setSteps([
-      { id: 'tables', label: 'Creating database tables...', status: 'pending' },
-      { id: 'storage', label: 'Setting up storage bucket...', status: 'pending' },
+      { id: 'firestore', label: 'Verifying Firestore access...', status: 'pending' },
+      { id: 'storage', label: 'Verifying Storage bucket...', status: 'pending' },
     ])
 
     const ok = await runProvisioning(settings, (updatedSteps) => {
@@ -64,7 +64,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
       <div className="text-5xl mb-4">⚙️</div>
       <h1 className="text-2xl font-bold mb-2">Setting up your project</h1>
       <p className="text-zinc-400 mb-8">
-        Provisioning tables and storage bucket...
+        Verifying Firebase services...
       </p>
 
       <div className="w-full max-w-md space-y-3 mb-8">

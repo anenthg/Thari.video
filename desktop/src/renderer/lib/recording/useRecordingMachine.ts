@@ -167,7 +167,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
 
       try {
         const { generateShortCode } = await import('./shortCode')
-        const { uploadVideo, insertVideo, getShareURL } = await import('../supabase')
+        const { uploadVideo, insertVideo, getShareURL } = await import('../firebase')
 
         setUploadProgress(10)
         const shortCode = await generateShortCode()
@@ -189,15 +189,9 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
 
         setUploadProgress(100)
 
-        if (settings.supabaseRef) {
-          setShareURL(getShareURL(settings.supabaseRef, shortCode))
+        if (settings.firebaseProjectId) {
+          setShareURL(getShareURL(settings.firebaseProjectId, shortCode))
         }
-
-        setTimeout(() => {
-          setRecordedBlob(null)
-          setCanvas(null)
-          setPhase('idle')
-        }, 1500)
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Upload failed')
         setPhase('review')

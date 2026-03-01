@@ -1,10 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 export interface AppSettings {
-  supabaseURL?: string
-  supabaseRef?: string
-  serviceRoleKey?: string
-  databasePassword?: string
+  firebaseProjectId?: string
+  serviceAccountJson?: string
   isProvisioned?: boolean
 }
 
@@ -14,12 +12,45 @@ const api = {
     ipcRenderer.invoke('save-settings', settings),
   clearSettings: (): Promise<Record<string, never>> =>
     ipcRenderer.invoke('clear-settings'),
-  executeDDL: (
-    ref: string,
-    password: string,
-    sql: string,
+  validateFirebaseConnection: (
+    serviceAccountJson: string,
+  ): Promise<{ ok: boolean; projectId?: string; error?: string }> =>
+    ipcRenderer.invoke('validate-firebase', serviceAccountJson),
+  firestoreInsert: (
+    collection: string,
+    docId: string,
+    data: Record<string, unknown>,
   ): Promise<{ ok: boolean; error?: string }> =>
-    ipcRenderer.invoke('execute-sql', ref, password, sql),
+    ipcRenderer.invoke('firestore-insert', collection, docId, data),
+  firestoreQuery: (
+    collection: string,
+    orderBy: string,
+    direction: string,
+  ): Promise<{ ok: boolean; data?: Record<string, unknown>[]; error?: string }> =>
+    ipcRenderer.invoke('firestore-query', collection, orderBy, direction),
+  firestoreQueryByField: (
+    collection: string,
+    field: string,
+    value: string,
+  ): Promise<{ ok: boolean; data?: Record<string, unknown>[]; error?: string }> =>
+    ipcRenderer.invoke('firestore-query-by-field', collection, field, value),
+  firestoreDelete: (
+    collection: string,
+    docId: string,
+  ): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('firestore-delete', collection, docId),
+  storageUpload: (
+    remotePath: string,
+    fileData: ArrayBuffer,
+    contentType: string,
+  ): Promise<{ ok: boolean; url?: string; error?: string }> =>
+    ipcRenderer.invoke('storage-upload', remotePath, fileData, contentType),
+  storageDelete: (remotePath: string): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('storage-delete', remotePath),
+  storageGetPublicUrl: (
+    remotePath: string,
+  ): Promise<{ ok: boolean; url?: string; error?: string }> =>
+    ipcRenderer.invoke('storage-get-public-url', remotePath),
   requestMicAccess: (): Promise<boolean> => ipcRenderer.invoke('request-mic-access'),
   getPermissionStatus: (): Promise<{
     screen: string

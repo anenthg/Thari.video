@@ -1,75 +1,52 @@
 import { useState } from 'react'
 import type { AppSettings } from '../lib/types'
-import { initClient, validateConnection, resetClient } from '../lib/supabase'
 
 interface Props {
   onConnect: (settings: AppSettings) => void
 }
 
 export default function SetupWizard({ onConnect }: Props) {
-  const [supabaseURL, setSupabaseURL] = useState('')
-  const [serviceRoleKey, setServiceRoleKey] = useState('')
-  const [databasePassword, setDatabasePassword] = useState('')
+  const [serviceAccountJson, setServiceAccountJson] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [connecting, setConnecting] = useState(false)
 
-  const isFormValid =
-    supabaseURL.trim() !== '' &&
-    serviceRoleKey.trim() !== '' &&
-    databasePassword.trim() !== ''
-
-  function extractRef(url: string): string {
-    try {
-      const host = new URL(url).hostname
-      return host.split('.')[0]
-    } catch {
-      return ''
-    }
-  }
+  const isFormValid = serviceAccountJson.trim() !== ''
 
   async function handleConnect() {
     setError(null)
     setConnecting(true)
 
-    if (!supabaseURL.includes('.supabase.co')) {
-      setError('Invalid Supabase URL. Expected format: https://abcdef.supabase.co')
+    // Validate JSON format
+    try {
+      const parsed = JSON.parse(serviceAccountJson)
+      if (!parsed.project_id || !parsed.private_key || !parsed.client_email) {
+        setError('Invalid Service Account JSON. Missing required fields (project_id, private_key, client_email).')
+        setConnecting(false)
+        return
+      }
+    } catch {
+      setError('Invalid JSON format. Please paste a valid Service Account JSON.')
       setConnecting(false)
       return
     }
 
     try {
-      // Validate connection by initializing client and pinging the project
-      initClient(supabaseURL, serviceRoleKey)
-
       const result = await Promise.race([
-        validateConnection(),
+        window.api.validateFirebaseConnection(serviceAccountJson),
         new Promise<{ ok: false; error: string }>((_, reject) =>
-          setTimeout(() => reject(new Error('Connection timed out. Check your Supabase URL and try again.')), 15000),
+          setTimeout(() => reject(new Error('Connection timed out. Check your Service Account and try again.')), 15000),
         ),
       ])
 
       if (!result.ok) {
-        resetClient()
         setError(result.error ?? 'Connection failed')
         setConnecting(false)
         return
       }
 
-      // Validate DB connection
-      const ref = extractRef(supabaseURL)
-      const dbResult = await window.api.executeDDL(ref, databasePassword, 'SELECT 1')
-      if (!dbResult.ok) {
-        resetClient()
-        setError(dbResult.error ?? 'Database connection failed')
-        setConnecting(false)
-        return
-      }
-
       const settings: AppSettings = {
-        supabaseURL,
-        supabaseRef: ref,
-        serviceRoleKey,
-        databasePassword,
+        firebaseProjectId: result.projectId,
+        serviceAccountJson,
         isProvisioned: false,
       }
 
@@ -77,7 +54,6 @@ export default function SetupWizard({ onConnect }: Props) {
       setConnecting(false)
       onConnect(settings)
     } catch (e) {
-      resetClient()
       setError(e instanceof Error ? e.message : 'Connection failed. Please try again.')
       setConnecting(false)
     }
@@ -90,50 +66,25 @@ export default function SetupWizard({ onConnect }: Props) {
       <h1 className="text-3xl font-bold mb-2">Welcome to Thari.video</h1>
 
       <p className="text-zinc-400 mb-8">
-        Connect your Supabase project to get started.
+        Connect your Firebase project to get started.
       </p>
 
       <div className="w-full max-w-md space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">
-            Supabase Project URL
+            Service Account JSON
           </label>
-          <input
-            data-testid="supabase-url"
-            type="text"
-            placeholder="https://abcdef.supabase.co"
-            value={supabaseURL}
-            onChange={(e) => setSupabaseURL(e.target.value)}
-            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
+          <textarea
+            data-testid="service-account-json"
+            placeholder='Paste your Firebase Service Account JSON here...'
+            value={serviceAccountJson}
+            onChange={(e) => setServiceAccountJson(e.target.value)}
+            rows={8}
+            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 font-mono text-xs resize-none"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Service Role Key
-          </label>
-          <input
-            data-testid="service-role-key"
-            type="password"
-            placeholder="eyJhbGciOiJIUzI1NiIs..."
-            value={serviceRoleKey}
-            onChange={(e) => setServiceRoleKey(e.target.value)}
-            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Database Password
-          </label>
-          <input
-            data-testid="database-password"
-            type="password"
-            placeholder="Your database password"
-            value={databasePassword}
-            onChange={(e) => setDatabasePassword(e.target.value)}
-            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
-          />
+          <p className="text-xs text-zinc-500 mt-1">
+            Firebase Console → Project Settings → Service Accounts → Generate New Private Key
+          </p>
         </div>
 
         {error && (
@@ -151,14 +102,12 @@ export default function SetupWizard({ onConnect }: Props) {
           {connecting ? 'Connecting...' : 'Connect'}
         </button>
 
-        {/* TODO: Remove this — temp skip for Supabase outage */}
+        {/* TODO: Remove this — temp skip for dev */}
         <button
           onClick={() => {
             const settings: AppSettings = {
-              supabaseURL: '',
-              supabaseRef: '',
-              serviceRoleKey: '',
-              databasePassword: '',
+              firebaseProjectId: '',
+              serviceAccountJson: '',
               isProvisioned: true,
             }
             window.api.saveSettings(settings)

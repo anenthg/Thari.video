@@ -1,4 +1,4 @@
-import { isShortCodeTaken } from '../supabase'
+import { isShortCodeTaken } from '../firebase'
 
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 

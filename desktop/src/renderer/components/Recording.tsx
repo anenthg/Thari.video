@@ -6,6 +6,7 @@ import RecordingControls from './recording/RecordingControls'
 import ReviewPlayer from './recording/ReviewPlayer'
 import UploadProgress from './recording/UploadProgress'
 import PermissionGate from './recording/PermissionGate'
+import { RecordIcon } from './icons'
 
 export default function Recording() {
   // null = checking, false = show gate, true = show recording UI
@@ -42,7 +43,7 @@ function RecordingInner() {
   if (state.error) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-zinc-500 p-6">
-        <p className="text-red-400 mb-4">{state.error}</p>
+        <p className="text-[var(--crimson)] mb-4">{state.error}</p>
         <button
           onClick={state.reset}
           className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
@@ -60,12 +61,13 @@ function RecordingInner() {
           data-testid="recording-view"
           className="flex flex-col items-center justify-center h-full text-zinc-500"
         >
-          <div className="text-4xl mb-3">⏺</div>
+          <RecordIcon className="w-12 h-12 text-[var(--crimson)] mb-3" />
           <h2 className="text-lg font-semibold text-zinc-300 mb-4">Recording</h2>
           <button
             onClick={state.startSourceSelect}
-            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+            className="px-6 py-3 bg-[var(--crimson)] text-white rounded-lg font-medium transition-all hover:brightness-110 hover:shadow-[0_0_30px_rgba(217,43,43,0.3)] active:scale-[0.97] inline-flex items-center gap-2"
           >
+            <RecordIcon className="w-4 h-4" />
             Start Recording
           </button>
         </div>
@@ -111,6 +113,7 @@ function RecordingInner() {
         <UploadProgress
           progress={state.uploadProgress}
           shareURL={state.shareURL}
+          onNewRecording={state.reset}
         />
       )
 

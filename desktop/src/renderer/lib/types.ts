@@ -1,8 +1,6 @@
 export interface AppSettings {
-  supabaseURL?: string
-  supabaseRef?: string
-  serviceRoleKey?: string
-  databasePassword?: string
+  firebaseProjectId?: string
+  serviceAccountJson?: string // stringified service account key
   isProvisioned?: boolean
 }
 
@@ -55,11 +53,37 @@ export interface IElectronAPI {
   getSettings: () => Promise<AppSettings>
   saveSettings: (settings: AppSettings) => Promise<AppSettings>
   clearSettings: () => Promise<Record<string, never>>
-  executeDDL: (
-    ref: string,
-    password: string,
-    sql: string,
+  validateFirebaseConnection: (
+    serviceAccountJson: string,
+  ) => Promise<{ ok: boolean; projectId?: string; error?: string }>
+  firestoreInsert: (
+    collection: string,
+    docId: string,
+    data: Record<string, unknown>,
   ) => Promise<{ ok: boolean; error?: string }>
+  firestoreQuery: (
+    collection: string,
+    orderBy: string,
+    direction: string,
+  ) => Promise<{ ok: boolean; data?: Record<string, unknown>[]; error?: string }>
+  firestoreQueryByField: (
+    collection: string,
+    field: string,
+    value: string,
+  ) => Promise<{ ok: boolean; data?: Record<string, unknown>[]; error?: string }>
+  firestoreDelete: (
+    collection: string,
+    docId: string,
+  ) => Promise<{ ok: boolean; error?: string }>
+  storageUpload: (
+    remotePath: string,
+    fileData: ArrayBuffer,
+    contentType: string,
+  ) => Promise<{ ok: boolean; url?: string; error?: string }>
+  storageDelete: (remotePath: string) => Promise<{ ok: boolean; error?: string }>
+  storageGetPublicUrl: (
+    remotePath: string,
+  ) => Promise<{ ok: boolean; url?: string; error?: string }>
   getDesktopSources: () => Promise<DesktopSource[]>
   requestMicAccess: () => Promise<boolean>
   getPermissionStatus: () => Promise<PermissionStatuses>

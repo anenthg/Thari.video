@@ -8,6 +8,17 @@ let page: Page
 
 const MAIN_JS = path.join(__dirname, '../../out/main/index.js')
 
+const MOCK_SERVICE_ACCOUNT = JSON.stringify({
+  type: 'service_account',
+  project_id: 'test-project-123',
+  private_key_id: 'key123',
+  private_key: '-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA2a2rwplBQLZ8LMzz\n-----END RSA PRIVATE KEY-----\n',
+  client_email: 'test@test-project-123.iam.gserviceaccount.com',
+  client_id: '123456789',
+  auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+  token_uri: 'https://oauth2.googleapis.com/token',
+})
+
 function getSettingsDir(): string {
   const possibleDirs = [
     path.join(process.env.HOME || '', 'Library', 'Application Support', 'thari-video', 'config'),
@@ -46,36 +57,30 @@ test.describe('Setup Wizard', () => {
 
   test('appears on fresh launch', async () => {
     await expect(page.getByText('Welcome to Thari.video')).toBeVisible()
-    await expect(page.getByTestId('supabase-url')).toBeVisible()
-    await expect(page.getByTestId('service-role-key')).toBeVisible()
-    await expect(page.getByTestId('database-password')).toBeVisible()
+    await expect(page.getByTestId('service-account-json')).toBeVisible()
   })
 
   test('connect button is disabled when fields are empty', async () => {
     await expect(page.getByTestId('connect-button')).toBeDisabled()
   })
 
-  test('invalid URL format shows error', async () => {
-    await page.getByTestId('supabase-url').fill('not-a-valid-url')
-    await page.getByTestId('service-role-key').fill('somekey')
-    await page.getByTestId('database-password').fill('somepassword')
+  test('invalid JSON shows error', async () => {
+    await page.getByTestId('service-account-json').fill('not valid json')
     await page.getByTestId('connect-button').click()
 
     await expect(page.getByTestId('error-message')).toContainText(
-      'Invalid Supabase URL',
+      'Invalid JSON',
     )
   })
 
   test('valid credentials with successful validation shows provisioning', async () => {
-    // Intercept the Supabase REST call to simulate a successful connection
-    await page.route('**/rest/v1/videos**', (route) =>
-      route.fulfill({ status: 200, body: JSON.stringify([]) }),
-    )
-
-    // Mock the DB connection validation in the main process
+    // Mock the Firebase connection validation in the main process
     await app.evaluate(({ ipcMain }) => {
-      ipcMain.removeHandler('execute-sql')
-      ipcMain.handle('execute-sql', async () => ({ ok: true }))
+      ipcMain.removeHandler('validate-firebase')
+      ipcMain.handle('validate-firebase', async () => ({
+        ok: true,
+        projectId: 'test-project-123',
+      }))
     })
 
     await fillCredentials(page)
@@ -87,16 +92,16 @@ test.describe('Setup Wizard', () => {
 
   test('failed validation shows connection error', async () => {
     // Wait for the wizard to be fully rendered
-    await expect(page.getByTestId('supabase-url')).toBeVisible()
+    await expect(page.getByTestId('service-account-json')).toBeVisible()
 
-    // Intercept to simulate auth failure
-    await page.route('**/rest/v1/**', (route) =>
-      route.fulfill({
-        status: 401,
-        contentType: 'application/json',
-        body: JSON.stringify({ message: 'Invalid API key' }),
-      }),
-    )
+    // Mock validation failure
+    await app.evaluate(({ ipcMain }) => {
+      ipcMain.removeHandler('validate-firebase')
+      ipcMain.handle('validate-firebase', async () => ({
+        ok: false,
+        error: 'Firebase connection failed: Invalid credentials',
+      }))
+    })
 
     await fillCredentials(page)
     await page.getByTestId('connect-button').click()
@@ -114,14 +119,14 @@ test.describe('Provisioning', () => {
     page = await app.firstWindow()
     await page.waitForLoadState('domcontentloaded')
     // Seed settings with isProvisioned: false
-    await page.evaluate(() =>
-      window.api.saveSettings({
-        supabaseURL: 'https://testproject.supabase.co',
-        supabaseRef: 'testproject',
-        serviceRoleKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test',
-        databasePassword: 'test_password',
-        isProvisioned: false,
-      }),
+    await page.evaluate(
+      (saJson) =>
+        window.api.saveSettings({
+          firebaseProjectId: 'test-project-123',
+          serviceAccountJson: saJson,
+          isProvisioned: false,
+        }),
+      MOCK_SERVICE_ACCOUNT,
     )
     await page.reload()
     await page.waitForLoadState('domcontentloaded')
@@ -133,7 +138,7 @@ test.describe('Provisioning', () => {
 
   test('provisioning screen appears when isProvisioned is false', async () => {
     await expect(page.getByTestId('provisioning-screen')).toBeVisible()
-    await expect(page.getByTestId('step-tables')).toBeVisible()
+    await expect(page.getByTestId('step-firestore')).toBeVisible()
     await expect(page.getByTestId('step-storage')).toBeVisible()
   })
 })
@@ -148,14 +153,14 @@ test.describe('Sidebar & Settings', () => {
     await page.waitForLoadState('domcontentloaded')
     // Seed settings via the app's own IPC (handles encryption properly)
     // isProvisioned: true to skip provisioning and go straight to Layout
-    await page.evaluate(() =>
-      window.api.saveSettings({
-        supabaseURL: 'https://testproject.supabase.co',
-        supabaseRef: 'testproject',
-        serviceRoleKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test',
-        databasePassword: 'test_password',
-        isProvisioned: true,
-      }),
+    await page.evaluate(
+      (saJson) =>
+        window.api.saveSettings({
+          firebaseProjectId: 'test-project-123',
+          serviceAccountJson: saJson,
+          isProvisioned: true,
+        }),
+      MOCK_SERVICE_ACCOUNT,
     )
     // Reload so the app picks up the seeded settings
     await page.reload()
@@ -189,10 +194,9 @@ test.describe('Sidebar & Settings', () => {
   test('settings shows connection info', async () => {
     await page.getByTestId('tab-settings').click()
 
-    await expect(page.getByTestId('settings-url')).toContainText(
-      'https://testproject.supabase.co',
+    await expect(page.getByTestId('settings-project-id')).toContainText(
+      'test-project-123',
     )
-    await expect(page.getByTestId('settings-ref')).toContainText('testproject')
   })
 
   test('settings shows re-provision button', async () => {
@@ -209,7 +213,5 @@ test.describe('Sidebar & Settings', () => {
 })
 
 async function fillCredentials(page: Page) {
-  await page.getByTestId('supabase-url').fill('https://testproject.supabase.co')
-  await page.getByTestId('service-role-key').fill('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test')
-  await page.getByTestId('database-password').fill('test_password')
+  await page.getByTestId('service-account-json').fill(MOCK_SERVICE_ACCOUNT)
 }

@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
+import { MicIcon, MicOffIcon, StopIcon } from '../icons'
 
 interface RecordingControlsProps {
   canvas: HTMLCanvasElement
@@ -54,27 +55,29 @@ export default function RecordingControls({
       />
 
       <div className="flex items-center justify-center gap-4">
-        <div className="flex items-center gap-2 text-red-400">
-          <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+        <div className="flex items-center gap-2 text-[var(--crimson)]">
+          <span className="w-3 h-3 rounded-full bg-[var(--crimson)] animate-pulse" />
           <span className="font-mono text-lg">{formatTime(elapsedSeconds)}</span>
         </div>
 
         <button
           onClick={handleMicToggle}
-          className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+          title={micMuted ? 'Unmute mic' : 'Mute mic'}
+          className={`p-2.5 rounded-full transition-colors ${
             micMuted
-              ? 'bg-red-600/20 text-red-400'
-              : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+              ? 'bg-[var(--crimson)]/20 text-[var(--crimson)]'
+              : 'text-[var(--emerald)] hover:bg-zinc-800'
           }`}
         >
-          {micMuted ? 'Muted' : 'Mic'}
+          {micMuted ? <MicOffIcon className="w-5 h-5" /> : <MicIcon className="w-5 h-5" />}
         </button>
 
         <button
           onClick={onStop}
-          className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+          title="Stop recording"
+          className="p-2.5 rounded-full bg-[var(--crimson)] text-white transition-all hover:brightness-110"
         >
-          Stop
+          <StopIcon className="w-5 h-5" />
         </button>
       </div>
     </div>

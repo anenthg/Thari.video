@@ -1,4 +1,5 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
+import { TrashIcon, UploadIcon } from '../icons'
 
 interface ReviewPlayerProps {
   blob: Blob
@@ -137,11 +138,11 @@ export default function ReviewPlayer({
             </div>
           )}
           <div
-            className="absolute inset-y-0 left-0 bg-blue-500 rounded-r-full"
+            className="absolute inset-y-0 left-0 bg-[var(--crimson)] rounded-r-full"
             style={{ width: `${progress}%` }}
           />
           <div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow"
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-[var(--crimson)] rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow"
             style={{ left: `${progress}%` }}
           />
         </div>
@@ -156,20 +157,22 @@ export default function ReviewPlayer({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Recording title (optional)"
-        className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-4"
+        className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[var(--crimson)] mb-4"
       />
 
       <div className="flex gap-3">
         <button
           onClick={onDiscard}
-          className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
+          className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors flex items-center justify-center gap-2"
         >
+          <TrashIcon className="w-4 h-4" />
           Discard
         </button>
         <button
           onClick={() => onUpload(title)}
-          className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+          className="flex-1 px-4 py-2 bg-[var(--crimson)] hover:brightness-110 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
         >
+          <UploadIcon className="w-4 h-4" />
           Upload
         </button>
       </div>

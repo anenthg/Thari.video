@@ -1,5 +1,13 @@
 @import 'tailwindcss';
 
+:root {
+  --crimson: #D92B2B;
+  --emerald: #0E9A57;
+  --mustard: #F5C518;
+  --cotton: #F5F5E8;
+  --warp-indigo: #1A1A2E;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
