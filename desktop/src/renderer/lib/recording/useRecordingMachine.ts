@@ -17,6 +17,8 @@ export interface RecordingState {
   error: string | null
   uploadProgress: number
   shareURL: string | null
+  /** false when no live audio source (system audio dead + no mic) */
+  hasLiveAudio: boolean
 }
 
 export interface RecordingActions {
@@ -43,6 +45,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
   const [error, setError] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [shareURL, setShareURL] = useState<string | null>(null)
+  const [hasLiveAudio, setHasLiveAudio] = useState(true)
 
   const { acquire, release } = useMediaCapture()
   const compositorRef = useRef<CanvasCompositor | null>(null)
@@ -86,6 +89,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
     async (sourceId: string) => {
       try {
         const mediaStreams = await acquire(sourceId, enableCamera, enableMic)
+        setHasLiveAudio(mediaStreams.hasLiveAudio)
 
         // Create compositor
         const comp = createCanvasCompositor(mediaStreams.screen, mediaStreams.camera)
@@ -213,6 +217,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
     setError(null)
     setUploadProgress(0)
     setShareURL(null)
+    setHasLiveAudio(true)
     setElapsedSeconds(0)
     setCountdownValue(3)
   }, [cleanup])
@@ -229,6 +234,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
     error,
     uploadProgress,
     shareURL,
+    hasLiveAudio,
     startSourceSelect,
     toggleCamera,
     toggleMic,

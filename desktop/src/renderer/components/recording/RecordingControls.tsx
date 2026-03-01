@@ -4,6 +4,7 @@ import { MicIcon, MicOffIcon, StopIcon } from '../icons'
 interface RecordingControlsProps {
   canvas: HTMLCanvasElement
   elapsedSeconds: number
+  hasLiveAudio: boolean
   onStop: () => void
   onToggleMic: (muted: boolean) => void
 }
@@ -19,6 +20,7 @@ function formatTime(seconds: number): string {
 export default function RecordingControls({
   canvas,
   elapsedSeconds,
+  hasLiveAudio,
   onStop,
   onToggleMic,
 }: RecordingControlsProps) {
@@ -49,6 +51,12 @@ export default function RecordingControls({
 
   return (
     <div className="flex flex-col h-full p-4">
+      {!hasLiveAudio && (
+        <div className="mb-2 px-3 py-2 bg-[var(--mustard)]/10 border border-[var(--mustard)]/30 rounded-lg text-[var(--mustard)] text-xs text-center">
+          No audio source detected — recording will be silent. Enable your mic for narration.
+        </div>
+      )}
+
       <div
         ref={containerRef}
         className="flex-1 bg-black rounded-lg overflow-hidden mb-4"

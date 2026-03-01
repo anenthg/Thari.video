@@ -1,9 +1,13 @@
 import { useState, useCallback, useRef } from 'react'
 
-interface MediaStreams {
+export interface MediaStreams {
   screen: MediaStream
   camera: MediaStream | null
   mic: MediaStream | null
+  /** true when system audio track was provided but arrived dead (macOS limitation) */
+  systemAudioDead: boolean
+  /** true when at least one live audio source is connected */
+  hasLiveAudio: boolean
 }
 
 export function useMediaCapture() {
@@ -52,6 +56,18 @@ export function useMediaCapture() {
           })
         })
 
+      // Check if system audio track is alive — on macOS it often arrives
+      // with readyState=ended because loopback audio isn't natively supported
+      const screenAudioTracks = screen.getAudioTracks()
+      const systemAudioDead = screenAudioTracks.length > 0 &&
+        screenAudioTracks.every((t) => t.readyState === 'ended')
+
+      // Remove dead audio tracks from the screen stream so the mixer
+      // doesn't try to use them
+      if (systemAudioDead) {
+        screenAudioTracks.forEach((t) => screen.removeTrack(t))
+      }
+
       let camera: MediaStream | null = null
       if (enableCamera) {
         try {
@@ -63,20 +79,25 @@ export function useMediaCapture() {
         }
       }
 
+      // Always attempt mic capture when enabled — this is the primary audio
+      // source on macOS since system audio capture is unreliable
       let mic: MediaStream | null = null
       if (enableMic) {
         try {
-          // Request microphone permission on macOS before getUserMedia
           await window.api.requestMicAccess()
           mic = await navigator.mediaDevices.getUserMedia({
             audio: { echoCancellation: true, noiseSuppression: true },
           })
         } catch {
-          console.warn('Microphone not available')
+          /* mic not available */
         }
       }
 
-      const result = { screen, camera, mic }
+      const hasLiveAudio =
+        (!systemAudioDead && screenAudioTracks.length > 0) ||
+        (mic !== null && mic.getAudioTracks().some((t) => t.readyState === 'live'))
+
+      const result: MediaStreams = { screen, camera, mic, systemAudioDead, hasLiveAudio }
       streamsRef.current = result
       setStreams(result)
       return result

@@ -13,8 +13,6 @@ export function createRecorder(
   if (audioDestination) {
     tracks.push(...audioDestination.stream.getAudioTracks())
   }
-  console.log('[recorder] video tracks:', videoStream.getVideoTracks().length,
-    'audio tracks:', tracks.length - videoStream.getVideoTracks().length)
   const combinedStream = new MediaStream(tracks)
 
   // Prefer VP9, fall back to VP8

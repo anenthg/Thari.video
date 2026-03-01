@@ -11,30 +11,28 @@ export function createAudioMixer(
   const ctx = new AudioContext()
   // AudioContext may start suspended after an async gap — ensure it's running
   if (ctx.state !== 'running') ctx.resume()
-  console.log('[audio-mixer] ctx.state:', ctx.state)
   const destination = ctx.createMediaStreamDestination()
 
   let micGain: GainNode | null = null
 
-  if (systemStream && systemStream.getAudioTracks().length > 0) {
-    console.log('[audio-mixer] system audio tracks:', systemStream.getAudioTracks().length)
-    const systemSource = ctx.createMediaStreamSource(systemStream)
+  // Only connect system audio if it has live tracks
+  const sysAudioTracks = systemStream?.getAudioTracks().filter((t) => t.readyState === 'live') ?? []
+  if (sysAudioTracks.length > 0) {
+    const liveSystemAudio = new MediaStream(sysAudioTracks)
+    const systemSource = ctx.createMediaStreamSource(liveSystemAudio)
     systemSource.connect(destination)
-  } else {
-    console.log('[audio-mixer] no system audio')
   }
 
-  if (micStream && micStream.getAudioTracks().length > 0) {
-    console.log('[audio-mixer] mic audio tracks:', micStream.getAudioTracks().length)
-    const micSource = ctx.createMediaStreamSource(micStream)
+  // Only connect mic if it has live tracks
+  const micAudioTracks = micStream?.getAudioTracks().filter((t) => t.readyState === 'live') ?? []
+  if (micAudioTracks.length > 0) {
+    const liveMicAudio = new MediaStream(micAudioTracks)
+    const micSource = ctx.createMediaStreamSource(liveMicAudio)
     micGain = ctx.createGain()
+    micGain.gain.value = 1
     micSource.connect(micGain)
     micGain.connect(destination)
-  } else {
-    console.log('[audio-mixer] no mic stream')
   }
-
-  console.log('[audio-mixer] destination tracks:', destination.stream.getAudioTracks().length)
 
   return {
     destination,

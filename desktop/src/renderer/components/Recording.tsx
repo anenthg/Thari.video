@@ -93,6 +93,7 @@ function RecordingInner() {
         <RecordingControls
           canvas={state.canvas}
           elapsedSeconds={state.elapsedSeconds}
+          hasLiveAudio={state.hasLiveAudio}
           onStop={state.stopRecording}
           onToggleMic={state.setMicMuted}
         />
