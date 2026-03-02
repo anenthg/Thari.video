@@ -12,9 +12,6 @@ export default function App() {
     window.api.getSettings().then((s) => {
       if (s.firebaseProjectId && s.serviceAccountJson) {
         setSettings(s)
-      } else if (s.isProvisioned) {
-        // TODO: Remove — temp dev skip with no credentials
-        setSettings(s)
       }
       setLoading(false)
     })

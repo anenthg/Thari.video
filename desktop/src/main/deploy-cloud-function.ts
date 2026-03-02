@@ -818,13 +818,29 @@ export async function deployCloudFunction(params: DeployParams): Promise<DeployR
     log('Step 3/5: Source uploaded to GCS')
 
     // Create or update the function (v2 API)
+    // Retry on "unable to queue" — GCP rejects concurrent operations on the same function
     log('Step 4/5: Creating/updating function (v2)...')
-    const operationName = await createOrUpdateFunction(
-      token,
-      projectId,
-      source,
-      firestoreDbId,
-    )
+    let operationName: string | undefined
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      try {
+        operationName = await createOrUpdateFunction(
+          token,
+          projectId,
+          source,
+          firestoreDbId,
+        )
+        break
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e)
+        if (msg.includes('unable to queue') && attempt < 5) {
+          log(`Step 4/5: Attempt ${attempt} failed (operation in progress), retrying in 15s...`)
+          await new Promise((r) => setTimeout(r, 15_000))
+        } else {
+          throw e
+        }
+      }
+    }
+    if (!operationName) throw new Error('Failed to create/update function after retries')
 
     // Poll until deployment completes — returns function URL if available
     log('Step 4/5: Waiting for deployment to complete...')
@@ -841,16 +857,16 @@ export async function deployCloudFunction(params: DeployParams): Promise<DeployR
     // Retry a few times — Cloud Run service may not be ready immediately after deployment
     log('Step 5/5: Setting public access on Cloud Run service...')
     let publicAccessSet = false
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    for (let attempt = 1; attempt <= 5; attempt++) {
       try {
         await setPublicAccess(token, projectId, functionName)
         publicAccessSet = true
         break
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e)
-        if (msg.includes('unable to queue') && attempt < 3) {
-          log(`Step 5/5: Attempt ${attempt} failed (service not ready), retrying in 10s...`)
-          await new Promise((r) => setTimeout(r, 10_000))
+        if (msg.includes('unable to queue') && attempt < 5) {
+          log(`Step 5/5: Attempt ${attempt} failed (service not ready), retrying in 15s...`)
+          await new Promise((r) => setTimeout(r, 15_000))
         } else {
           throw e // re-throw on final attempt or non-retryable errors
         }

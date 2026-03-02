@@ -31,12 +31,6 @@ function formatRelativeDate(dateStr: string): string {
   return date.toLocaleDateString()
 }
 
-const captureModeConfig: Record<string, { label: string; color: string }> = {
-  screen: { label: 'S', color: 'bg-[var(--crimson)]' },
-  window: { label: 'W', color: 'bg-[var(--mustard)]' },
-  tab: { label: 'T', color: 'bg-[var(--emerald)]' },
-}
-
 export default function Library({ settings }: Props) {
   const [videos, setVideos] = useState<Video[]>([])
   const [loading, setLoading] = useState(true)
@@ -132,24 +126,16 @@ export default function Library({ settings }: Props) {
       <h2 className="text-lg font-semibold text-zinc-200 mb-4">Library</h2>
       <div className="flex flex-col gap-2">
         {videos.map((video) => {
-          const mode = captureModeConfig[video.capture_mode] ?? captureModeConfig.screen
           const isDeleting = deletingId === video.short_code
           const isCopied = copiedId === video.short_code
 
           return (
             <div
               key={video.id}
-              className={`stripe-hover-border flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-all duration-200 ${
+              className={`flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-all duration-200 ${
                 isDeleting ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              {/* Capture mode icon */}
-              <div
-                className={`flex-shrink-0 w-9 h-9 rounded-lg ${mode.color} flex items-center justify-center text-white text-sm font-bold`}
-              >
-                {mode.label}
-              </div>
-
               {/* Title + metadata */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-zinc-200 truncate">

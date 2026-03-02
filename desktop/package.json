@@ -31,8 +31,10 @@
   "build": {
     "appId": "video.thari.desktop",
     "productName": "Thari.video",
+    "icon": "resources/icon.png",
     "mac": {
       "target": "dmg",
+      "icon": "resources/icon.icns",
       "extendInfo": {
         "NSMicrophoneUsageDescription": "Thari.video needs microphone access to record audio with your screen capture.",
         "NSCameraUsageDescription": "Thari.video needs camera access to include a camera overlay in your recording.",

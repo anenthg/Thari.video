@@ -70,12 +70,15 @@ export function usePermissions(): UsePermissionsReturn {
 
   const permissions: PermissionEntry[] = [
     {
-      key: 'screen',
-      label: 'Screen Recording',
-      status: statuses.screen as PermissionStatus,
-      mandatory: true,
-      instruction: 'Open System Settings and grant Screen Recording access to Thari.video.',
-      requestable: false,
+      key: 'camera',
+      label: 'Camera',
+      status: statuses.camera as PermissionStatus,
+      mandatory: false,
+      instruction:
+        statuses.camera === 'not-determined'
+          ? 'Click Grant Access to enable camera overlay.'
+          : 'Open System Settings and grant Camera access to Thari.video.',
+      requestable: statuses.camera === 'not-determined',
     },
     {
       key: 'microphone',
@@ -89,15 +92,12 @@ export function usePermissions(): UsePermissionsReturn {
       requestable: statuses.microphone === 'not-determined',
     },
     {
-      key: 'camera',
-      label: 'Camera',
-      status: statuses.camera as PermissionStatus,
-      mandatory: false,
-      instruction:
-        statuses.camera === 'not-determined'
-          ? 'Click Grant Access to enable camera overlay.'
-          : 'Open System Settings and grant Camera access to Thari.video.',
-      requestable: statuses.camera === 'not-determined',
+      key: 'screen',
+      label: 'Screen Recording',
+      status: statuses.screen as PermissionStatus,
+      mandatory: true,
+      instruction: 'Open System Settings and grant Screen Recording access to Thari.video.',
+      requestable: false,
     },
   ]
 

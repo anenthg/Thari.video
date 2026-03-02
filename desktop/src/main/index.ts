@@ -3,6 +3,7 @@ import {
   BrowserWindow,
   desktopCapturer,
   ipcMain,
+  nativeImage,
   net,
   session,
   shell,
@@ -199,12 +200,14 @@ async function createFirestoreNativeDB(
 }
 
 function createWindow(): void {
+  const iconPath = join(__dirname, '../../resources/icon.png')
   const mainWindow = new BrowserWindow({
     width: 1000,
     height: 700,
     minWidth: 800,
     minHeight: 600,
     title: 'Thari.video',
+    icon: nativeImage.createFromPath(iconPath),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,

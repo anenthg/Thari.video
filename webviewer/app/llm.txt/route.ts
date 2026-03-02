@@ -185,8 +185,8 @@ Mock mode activates automatically on localhost, providing fake data without a Fi
 ## Links
 
 - Website: https://thari.video
-- GitHub: https://github.com/niceBoy0419/openloom
-- Releases: https://github.com/niceBoy0419/openloom/releases
+- GitHub: https://github.com/anenthg/Thari.video
+- Releases: https://github.com/anenthg/Thari.video/releases
 `;
 
 export async function GET() {

@@ -8,8 +8,8 @@ import { FolderIcon, RecordIcon, GearIcon } from './icons'
 type Tab = 'library' | 'record' | 'settings'
 
 const tabs: { id: Tab; label: string; icon: ReactNode }[] = [
-  { id: 'library', label: 'Library', icon: <FolderIcon className="w-5 h-5" /> },
   { id: 'record', label: 'Record', icon: <RecordIcon className="w-5 h-5" /> },
+  { id: 'library', label: 'Library', icon: <FolderIcon className="w-5 h-5" /> },
   { id: 'settings', label: 'Settings', icon: <GearIcon className="w-5 h-5" /> },
 ]
 
@@ -20,7 +20,7 @@ interface Props {
 }
 
 export default function Layout({ settings, onDisconnect, onReprovision }: Props) {
-  const [activeTab, setActiveTab] = useState<Tab>('library')
+  const [activeTab, setActiveTab] = useState<Tab>('record')
 
   return (
     <div className="flex h-screen">
@@ -46,7 +46,7 @@ export default function Layout({ settings, onDisconnect, onReprovision }: Props)
       </nav>
 
       <main className="flex-1 overflow-auto">
-        <div className="stripe-divider-slow h-[3px]" />
+        <div className="stripe-divider h-[3px]" />
         {activeTab === 'library' && <Library settings={settings} />}
         {activeTab === 'record' && <Recording />}
         {activeTab === 'settings' && (

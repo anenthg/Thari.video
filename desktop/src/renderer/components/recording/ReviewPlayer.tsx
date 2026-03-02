@@ -282,8 +282,9 @@ export default function ReviewPlayer({
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Recording title (optional)"
+        placeholder="Recording title"
         className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[var(--crimson)] mb-4"
+        required
       />
 
       <div className="flex gap-3">
@@ -296,7 +297,8 @@ export default function ReviewPlayer({
         </button>
         <button
           onClick={() => onUpload(title)}
-          className="flex-1 px-4 py-2 bg-[var(--crimson)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+          disabled={!title.trim()}
+          className="flex-1 px-4 py-2 bg-[var(--crimson)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100 disabled:hover:shadow-none"
         >
           <UploadIcon className="w-4 h-4" />
           Upload

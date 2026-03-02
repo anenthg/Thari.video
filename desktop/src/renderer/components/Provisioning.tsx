@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { AppSettings } from '../lib/types'
 import { runProvisioning, type ProvisioningStep, type StepStatus } from '../lib/provisioning'
+import appIcon from '../assets/icon-64.png'
 
 interface Props {
   settings: AppSettings
@@ -56,12 +57,16 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
     startProvisioning()
   }, [])
 
+  const isInProgress = !finished && !hasError
+
   return (
     <div
       data-testid="provisioning-screen"
-      className="flex flex-col items-center justify-center h-screen px-10"
+      className="flex flex-col h-screen"
     >
-      <div className="stripe-divider-slow h-[3px] w-24 mb-6 rounded-full" />
+      <div className={`${isInProgress ? 'stripe-divider-slow' : 'stripe-divider'} h-[3px] shrink-0`} />
+      <div className="flex-1 flex flex-col items-center justify-center px-10">
+      <img src={appIcon} alt="" className="w-14 h-14 mb-4 rounded-xl" />
       <h1 className="text-2xl font-bold mb-2">Setting up your project</h1>
       <p className="text-zinc-400 mb-8">
         Verifying Firebase services...
@@ -161,6 +166,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
           </button>
         </div>
       )}
+      </div>
     </div>
   )
 }

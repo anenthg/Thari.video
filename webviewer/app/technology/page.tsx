@@ -877,11 +877,11 @@ service cloud.firestore {
                 <span className="text-[var(--emerald)]">$</span>
                 <span className="text-[var(--cotton)]/70">
                   {" "}
-                  git clone https://github.com/niceBoy0419/openloom-viewer.git
+                  git clone https://github.com/anenthg/Thari.video.git
                 </span>
                 {"\n"}
                 <span className="text-[var(--emerald)]">$</span>
-                <span className="text-[var(--cotton)]/70"> cd openloom-viewer</span>
+                <span className="text-[var(--cotton)]/70"> cd Thari.video</span>
                 {"\n\n"}
                 <span className="text-[var(--cotton)]/40"># 2. Install & build</span>
                 {"\n"}
@@ -1008,7 +1008,7 @@ service cloud.firestore {
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <a
-              href="https://github.com/niceBoy0419/openloom/releases"
+              href="https://github.com/anenthg/Thari.video"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl bg-[var(--crimson)] px-10 py-4 text-lg font-semibold text-white transition-all hover:brightness-110 hover:shadow-[0_0_40px_rgba(217,43,43,0.3)] active:scale-[0.97]"
@@ -1016,7 +1016,7 @@ service cloud.firestore {
               Download for Mac
             </a>
             <a
-              href="https://github.com/niceBoy0419/openloom"
+              href="https://github.com/anenthg/Thari.video"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl border border-[var(--cotton)]/15 px-8 py-4 text-lg font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"
