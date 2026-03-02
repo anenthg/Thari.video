@@ -77,7 +77,7 @@ function initFirebase(serviceAccountJson: string, bucketName?: string) {
       credential: admin.credential.cert(serviceAccount),
       storageBucket: bucket,
     },
-    `thari-${Date.now()}`,
+    `openloom-${Date.now()}`,
   )
   return firebaseApp
 }
@@ -206,7 +206,7 @@ function createWindow(): void {
     height: 700,
     minWidth: 800,
     minHeight: 600,
-    title: 'Thari.video',
+    title: 'OpenLoom',
     icon: nativeImage.createFromPath(iconPath),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -247,7 +247,7 @@ ipcMain.handle('validate-firebase', async (_event, serviceAccountJson: string) =
       if (isDatastoreMode || isNotFound) {
         // NOT_FOUND → no database exists → create the (default) database
         // Datastore Mode → default exists but wrong mode → create a named database
-        const dbId = isDatastoreMode ? 'thari' : '(default)'
+        const dbId = isDatastoreMode ? 'openloom' : '(default)'
 
         try {
           await createFirestoreNativeDB(serviceAccount, dbId)

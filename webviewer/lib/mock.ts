@@ -16,9 +16,9 @@ export const USE_MOCK =
 
 const MOCK_VIDEO_META: VideoMeta = {
   short_code: "abc123",
-  title: "Getting Started with Thari",
+  title: "Getting Started with OpenLoom",
   description:
-    "A quick walkthrough of how to record and share your screen with Thari.",
+    "A quick walkthrough of how to record and share your screen with OpenLoom.",
   storage_url: "https://www.w3schools.com/html/mov_bbb.mp4",
   view_count: 42,
   duration_ms: 30000,

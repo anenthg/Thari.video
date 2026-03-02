@@ -52,12 +52,12 @@ export default function TechnologyPage() {
             <span className="h-3 w-3 rounded-full bg-[var(--mustard)]" />
             <span className="h-3 w-3 rounded-full bg-[var(--emerald)]" />
             <span className="ml-3 font-mono text-xs text-[var(--cotton)]/40">
-              ~/thari/technology
+              ~/openloom/technology
             </span>
           </div>
 
           <h1 className="font-sans text-[clamp(2rem,4.5vw,3.5rem)] font-bold leading-[1.1] tracking-tight text-[var(--cotton)]">
-            How Thari Works
+            How OpenLoom Works
             <br />
             <span className="text-[var(--cotton)]/50">Under the Hood</span>
           </h1>
@@ -136,7 +136,7 @@ export default function TechnologyPage() {
             data-delay="200"
           >
             <p>
-              When you download Thari Desktop, you get a native macOS
+              When you download OpenLoom Desktop, you get a native macOS
               application that runs entirely on your hardware. During the initial
               setup, you connect it to your own Firebase project. The app stores
               a{" "}
@@ -168,7 +168,7 @@ export default function TechnologyPage() {
               <span className="h-2.5 w-2.5 rounded-full bg-[var(--mustard)]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[var(--emerald)]" />
               <span className="ml-3 font-mono text-xs text-[var(--cotton)]/30">
-                ~/Library/Application Support/Thari/
+                ~/Library/Application Support/OpenLoom/
               </span>
             </div>
             <pre className="overflow-x-auto p-5 font-mono text-sm leading-relaxed text-[var(--cotton)]/60">
@@ -213,7 +213,7 @@ export default function TechnologyPage() {
                 The service account key is the crown jewel.
               </strong>{" "}
               It grants admin write access to your Firebase project. Because it
-              lives only on your machine, no one else — not even Thari&apos;s
+              lives only on your machine, no one else — not even OpenLoom&apos;s
               infrastructure — can modify your recordings, delete your data, or
               access your storage directly.
             </p>
@@ -259,7 +259,7 @@ export default function TechnologyPage() {
             data-reveal
             data-delay="200"
           >
-            When you set up Thari, you create a standard Firebase project (or
+            When you set up OpenLoom, you create a standard Firebase project (or
             use an existing one). The desktop app provisions four resources
             inside it. Here&apos;s exactly what each one stores and why.
           </p>
@@ -478,7 +478,7 @@ service cloud.firestore {
             data-reveal
             data-delay="200"
           >
-            Every Thari instance exposes exactly{" "}
+            Every OpenLoom instance exposes exactly{" "}
             <strong className="text-[var(--cotton)]">six HTTPS endpoints</strong>.
             These are the only way anyone — including the official viewer — can
             interact with your recordings. No backdoors, no admin panels, no
@@ -667,8 +667,8 @@ service cloud.firestore {
             data-reveal
             data-delay="200"
           >
-            The Thari web player at{" "}
-            <code className="font-mono text-[var(--emerald)]">thari.video</code>{" "}
+            The OpenLoom web player at{" "}
+            <code className="font-mono text-[var(--emerald)]">openloom.live</code>{" "}
             is a completely stateless single-page application. It carries{" "}
             <strong className="text-[var(--cotton)]">zero secrets</strong> and
             has <strong className="text-[var(--cotton)]">zero special
@@ -756,14 +756,14 @@ service cloud.firestore {
                 n={1}
                 color="var(--cotton)"
                 title="Parse the URL"
-                code="https://thari.video/v/{project-id}/{video-code}"
+                code="https://openloom.live/v/{project-id}/{video-code}"
                 desc="Extract the Firebase project ID and video code from the path."
               />
               <PlaybackStep
                 n={2}
                 color="var(--mustard)"
                 title="Construct the API base"
-                code="https://us-central1-{project-id}.cloudfunctions.net/thari"
+                code="https://us-central1-{project-id}.cloudfunctions.net/openloom"
                 desc="The viewer now knows where to send requests."
               />
               <PlaybackStep
@@ -854,7 +854,7 @@ service cloud.firestore {
             </strong>
             , you can fork and deploy your own instance. This gives you full
             control and eliminates any dependency on{" "}
-            <code className="font-mono text-[var(--emerald)]">thari.video</code>.
+            <code className="font-mono text-[var(--emerald)]">openloom.live</code>.
           </p>
 
           <div
@@ -877,11 +877,11 @@ service cloud.firestore {
                 <span className="text-[var(--emerald)]">$</span>
                 <span className="text-[var(--cotton)]/70">
                   {" "}
-                  git clone https://github.com/anenthg/Thari.video.git
+                  git clone https://github.com/anenthg/OpenLoom.git
                 </span>
                 {"\n"}
                 <span className="text-[var(--emerald)]">$</span>
-                <span className="text-[var(--cotton)]/70"> cd Thari.video</span>
+                <span className="text-[var(--cotton)]/70"> cd OpenLoom</span>
                 {"\n\n"}
                 <span className="text-[var(--cotton)]/40"># 2. Install & build</span>
                 {"\n"}
@@ -921,7 +921,7 @@ service cloud.firestore {
             {[
               {
                 title: "Your own domain",
-                desc: "watch.yourcompany.com instead of thari.video",
+                desc: "watch.yourcompany.com instead of openloom.live",
               },
               {
                 title: "Custom branding",
@@ -933,7 +933,7 @@ service cloud.firestore {
               },
               {
                 title: "Zero downtime risk",
-                desc: "Even if thari.video goes offline, your recordings are accessible",
+                desc: "Even if openloom.live goes offline, your recordings are accessible",
               },
             ].map((item) => (
               <div
@@ -1008,7 +1008,7 @@ service cloud.firestore {
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <a
-              href="https://github.com/anenthg/Thari.video"
+              href="https://github.com/anenthg/OpenLoom"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl bg-[var(--crimson)] px-10 py-4 text-lg font-semibold text-white transition-all hover:brightness-110 hover:shadow-[0_0_40px_rgba(217,43,43,0.3)] active:scale-[0.97]"
@@ -1016,7 +1016,7 @@ service cloud.firestore {
               Download for Mac
             </a>
             <a
-              href="https://github.com/anenthg/Thari.video"
+              href="https://github.com/anenthg/OpenLoom"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl border border-[var(--cotton)]/15 px-8 py-4 text-lg font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"
@@ -1033,7 +1033,7 @@ service cloud.firestore {
       <footer className="border-t border-[var(--cotton)]/5 bg-[var(--warp-indigo)] px-6 py-8">
         <div className="mx-auto flex max-w-screen-xl items-center justify-between text-sm text-[var(--cotton)]/40">
           <span className="font-mono text-xs text-[var(--cotton)]/25">
-            thari (தறி) — Tamil for loom. Design inspired by Bhavani Jamakkalam
+            OpenLoom — inspired by the thari (தறி), Tamil for loom. Design from Bhavani Jamakkalam
           </span>
           <span className="font-mono text-xs text-[var(--cotton)]/25">
             git init ~{" "}
@@ -1196,7 +1196,7 @@ function ArchitectureDiagram() {
         fontFamily="var(--font-space-grotesk), sans-serif"
         fontWeight="600"
       >
-        Thari Desktop
+        OpenLoom Desktop
       </text>
 
       {/* Lock icon + Service key */}
@@ -2102,7 +2102,7 @@ function ArchitectureDiagram() {
         fontFamily="var(--font-space-grotesk), sans-serif"
         fontWeight="600"
       >
-        thari.video
+        openloom.live
       </text>
       <text
         x="833"

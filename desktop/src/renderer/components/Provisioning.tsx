@@ -17,6 +17,10 @@ function StatusIcon({ status }: { status: StepStatus }) {
       return (
         <span className="text-[var(--mustard)] inline-block animate-spin">⟳</span>
       )
+    case 'waiting':
+      return (
+        <span className="text-[var(--mustard)] inline-block animate-spin">⟳</span>
+      )
     case 'done':
       return <span className="text-[var(--emerald)]">✓</span>
     case 'error':
@@ -90,7 +94,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
                     ? 'text-[var(--emerald)]'
                     : step.status === 'error'
                       ? 'text-[var(--crimson)]'
-                      : step.status === 'running'
+                      : step.status === 'running' || step.status === 'waiting'
                         ? 'text-[var(--mustard)]'
                         : 'text-zinc-500'
                 }
@@ -98,6 +102,12 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
                 {step.label}
               </span>
             </div>
+
+            {step.status === 'waiting' && (
+              <p className="ml-7 mt-1 text-xs text-[var(--mustard)] opacity-70">
+                This might take a minute...
+              </p>
+            )}
 
             {step.status === 'error' && step.actions && step.actions.length > 0 && (
               <div className="ml-7 mt-2 space-y-2">
@@ -142,7 +152,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
         ))}
       </div>
 
-      {finished && (
+      {finished ? (
         <button
           data-testid="provisioning-continue"
           onClick={onComplete}
@@ -150,9 +160,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
         >
           Continue
         </button>
-      )}
-
-      {hasError && (
+      ) : hasError ? (
         <div className="flex gap-3">
           <button
             data-testid="provisioning-retry"
@@ -169,7 +177,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
             Disconnect
           </button>
         </div>
-      )}
+      ) : null}
       </div>
     </div>
   )

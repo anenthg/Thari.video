@@ -12,7 +12,7 @@ export interface VideoMeta {
 }
 
 function apiBaseUrl(projectId: string): string {
-  return `https://us-central1-${projectId}.cloudfunctions.net/thari`;
+  return `https://us-central1-${projectId}.cloudfunctions.net/openloom`;
 }
 
 export async function fetchVideoMeta(

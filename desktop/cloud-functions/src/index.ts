@@ -24,7 +24,7 @@ function json(res: functions.Response, data: unknown, status = 200) {
   res.status(status).json(data);
 }
 
-export const thari = functions.https.onRequest(async (req, res) => {
+export const openloom = functions.https.onRequest(async (req, res) => {
   if (req.method === "OPTIONS") {
     cors(res);
     res.status(204).send("");

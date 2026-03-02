@@ -43,11 +43,11 @@ Stores recorded video files (`.webm` / `.mp4`).
 - Upload video files to `videos/{shortCode}.webm`
 - Delete video files
 - Generate public URLs (`https://storage.googleapis.com/{bucket}/{path}`)
-- Upload Cloud Function source ZIP to `cloud-function-source/thari-{timestamp}.zip`
+- Upload Cloud Function source ZIP to `cloud-function-source/openloom-{timestamp}.zip`
 
 ### 3. Cloud Functions (2nd gen)
 
-A single HTTP function `thari` deployed to `us-central1` serves the public API for the web viewer.
+A single HTTP function `openloom` deployed to `us-central1` serves the public API for the web viewer.
 
 **Endpoints:**
 
@@ -60,7 +60,7 @@ A single HTTP function `thari` deployed to `us-central1` serves the public API f
 
 **Runtime:** Node.js 20, 256Mi memory, 60s timeout
 
-**URL format:** `https://us-central1-{projectId}.cloudfunctions.net/thari`
+**URL format:** `https://us-central1-{projectId}.cloudfunctions.net/openloom`
 
 ---
 

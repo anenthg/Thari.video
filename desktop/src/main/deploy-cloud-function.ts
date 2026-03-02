@@ -10,6 +10,7 @@ export type DeployStage =
   | 'check-access'
   | 'upload-source'
   | 'create-function'
+  | 'create-function-waiting'
   | 'set-public-access'
 
 // ---------------------------------------------------------------------------
@@ -40,7 +41,7 @@ function json(res, data, status) {
   res.status(status).json(data);
 }
 
-exports.thari = functions.https.onRequest(function (req, res) {
+exports.openloom = functions.https.onRequest(function (req, res) {
   if (req.method === "OPTIONS") {
     res.set("Access-Control-Allow-Origin", "*");
     res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -108,7 +109,7 @@ exports.thari = functions.https.onRequest(function (req, res) {
 
 const FUNCTION_PACKAGE_JSON = JSON.stringify(
   {
-    name: 'thari-cloud-function',
+    name: 'openloom-cloud-function',
     version: '1.0.0',
     private: true,
     main: 'index.js',
@@ -416,7 +417,7 @@ async function uploadSourceToGCS(
   bucketName: string,
   zipBuffer: Buffer,
 ): Promise<{ bucket: string; object: string }> {
-  const objectName = `cloud-function-source/thari-${Date.now()}.zip`
+  const objectName = `cloud-function-source/openloom-${Date.now()}.zip`
   const gcsUrl = `https://storage.googleapis.com/upload/storage/v1/b/${encodeURIComponent(bucketName)}/o?uploadType=media&name=${encodeURIComponent(objectName)}`
   log(`Uploading source to GCS: gs://${bucketName}/${objectName} (${zipBuffer.length} bytes)`)
 
@@ -524,7 +525,7 @@ async function createOrUpdateFunction(
   firestoreDbId: string | undefined,
 ): Promise<string> {
   const parent = `projects/${projectId}/locations/us-central1`
-  const functionName = `${parent}/functions/thari`
+  const functionName = `${parent}/functions/openloom`
   const state = await checkFunctionState(token, functionName)
 
   // If a v1 function exists, delete it first — v2 API can't update a v1 function
@@ -537,7 +538,7 @@ async function createOrUpdateFunction(
     name: functionName,
     buildConfig: {
       runtime: 'nodejs20',
-      entryPoint: 'thari',
+      entryPoint: 'openloom',
       source: {
         storageSource: {
           bucket: source.bucket,
@@ -564,7 +565,7 @@ async function createOrUpdateFunction(
     method = 'PATCH'
     log(`Updating existing v2 function: ${method} ${url}`)
   } else {
-    url = `https://cloudfunctions.googleapis.com/v2/${parent}/functions?functionId=thari`
+    url = `https://cloudfunctions.googleapis.com/v2/${parent}/functions?functionId=openloom`
     method = 'POST'
     log(`Creating new v2 function: ${method} ${url}`)
   }
@@ -737,7 +738,7 @@ async function setPublicAccess(
   }
 
   // Expand short service name to full resource path if needed
-  // Short name example: "thari" → full: "projects/{p}/locations/us-central1/services/thari"
+  // Short name example: "openloom" → full: "projects/{p}/locations/us-central1/services/openloom"
   if (!serviceName.startsWith('projects/')) {
     serviceName = `projects/${projectId}/locations/us-central1/services/${serviceName}`
     log(`Expanded service name: ${serviceName}`)
@@ -857,12 +858,13 @@ export async function deployCloudFunction(
     if (!operationName) throw new Error('Failed to create/update function after retries')
 
     // Poll until deployment completes — returns function URL if available
+    onProgress?.('create-function-waiting')
     log('Step 4/5: Waiting for deployment to complete...')
     let functionUrl = await pollOperation(token, operationName)
     log('Step 4/5: Deployment complete')
 
     // If URL wasn't in the operation response, fetch it from the function
-    const functionName = `projects/${projectId}/locations/us-central1/functions/thari`
+    const functionName = `projects/${projectId}/locations/us-central1/functions/openloom`
     if (!functionUrl) {
       functionUrl = await getFunctionUrl(token, functionName)
     }

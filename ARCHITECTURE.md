@@ -1,6 +1,6 @@
 # Architecture
 
-Thari is a self-hosted, open-source screen recording tool. It has two halves — a **desktop app** that records and uploads, and a **web viewer** that plays back and collects reactions. They share no backend server; everything runs on the user's own Firebase project.
+OpenLoom is a self-hosted, open-source screen recording tool. It has two halves — a **desktop app** that records and uploads, and a **web viewer** that plays back and collects reactions. They share no backend server; everything runs on the user's own Firebase project.
 
 ```
 Desktop App                      Firebase (user-owned)                Web Viewer
@@ -125,7 +125,7 @@ useRecordingMachine (state orchestrator)
    b. Check Firestore for collisions (retry up to 10x)
    c. Upload WebM to Cloud Storage → get public URL
    d. Insert metadata doc into Firestore `videos/{shortCode}`
-   e. Build share link: https://thari.video/v/{projectId}/{shortCode}
+   e. Build share link: https://openloom.live/v/{projectId}/{shortCode}
 9. Show share link with copy button
 ```
 
@@ -134,7 +134,7 @@ useRecordingMachine (state orchestrator)
 The Cloud Function source is **embedded as string constants** in the desktop app — no file system paths or CLI tools needed. During provisioning:
 
 1. Build an in-memory ZIP (manual ZIP format using Node.js `zlib.deflateRawSync`)
-2. Upload ZIP to Cloud Storage (`cloud-function-source/thari-{timestamp}.zip`)
+2. Upload ZIP to Cloud Storage (`cloud-function-source/openloom-{timestamp}.zip`)
 3. Call Cloud Functions v2 REST API to create/update the function
 4. Poll the long-running operation until complete
 5. Store the deployed version in settings for idempotent re-deploys
@@ -146,7 +146,7 @@ If a v1 (1st gen) function exists from a prior deployment, it is detected and de
 Settings (including the service account JSON) are encrypted at rest using Electron's `safeStorage` API, which delegates to the OS keychain on macOS. The encrypted file lives at:
 
 ```
-~/Library/Application Support/thari-video/config/settings.json
+~/Library/Application Support/openloom/config/settings.json
 ```
 
 ### Key files
@@ -202,16 +202,16 @@ The video route uses a catch-all `[...slug]` segment. The client component parse
 ```
 1. Parse URL → projectId + shortCode
 2. Fetch metadata:
-   GET https://us-central1-{projectId}.cloudfunctions.net/thari/v/{shortCode}
+   GET https://us-central1-{projectId}.cloudfunctions.net/openloom/v/{shortCode}
 3. Increment view count:
-   POST .../thari/v/{shortCode}/view
+   POST .../openloom/v/{shortCode}/view
 4. Fetch video blob from storage_url (public GCS URL)
 5. Initialize Plyr with controls: play, progress, volume, speed, PiP, fullscreen
 6. Fetch reactions:
-   GET .../thari/v/{shortCode}/reactions
+   GET .../openloom/v/{shortCode}/reactions
 7. Render reaction markers on the progress bar (density histogram)
 8. User can add reactions (emoji bar below video):
-   POST .../thari/v/{shortCode}/reactions { emoji, timestamp }
+   POST .../openloom/v/{shortCode}/reactions { emoji, timestamp }
    → Optimistic UI update + floating emoji animation
 ```
 
@@ -223,7 +223,7 @@ The video route uses a catch-all `[...slug]` segment. The client component parse
 
 ```typescript
 function apiBaseUrl(projectId: string): string {
-  return `https://us-central1-${projectId}.cloudfunctions.net/thari`
+  return `https://us-central1-${projectId}.cloudfunctions.net/openloom`
 }
 ```
 
@@ -257,7 +257,7 @@ Reactions are added optimistically — the UI updates immediately and the server
 
 ## Cloud Function
 
-A single HTTP function named `thari` deployed to `us-central1` as a 2nd gen Cloud Function (runs on Cloud Run). It serves four endpoints:
+A single HTTP function named `openloom` deployed to `us-central1` as a 2nd gen Cloud Function (runs on Cloud Run). It serves four endpoints:
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -312,7 +312,7 @@ gs://{bucket}/
 The desktop app and web viewer never communicate directly. Firebase is the only shared state:
 
 1. **Desktop uploads** a video file to Cloud Storage and writes metadata to Firestore.
-2. **Desktop generates** a share URL: `https://thari.video/v/{projectId}/{shortCode}`.
+2. **Desktop generates** a share URL: `https://openloom.live/v/{projectId}/{shortCode}`.
 3. **Web viewer** receives this URL, extracts the project ID, and calls the user's Cloud Function to fetch metadata.
 4. **Cloud Function** reads from Firestore and returns the metadata including the `storage_url`.
 5. **Web viewer** loads the video directly from the public Cloud Storage URL.

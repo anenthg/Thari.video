@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 function useScrollReveal() {
@@ -57,7 +57,7 @@ export default function LandingPage() {
             <span className="h-3 w-3 rounded-full bg-[var(--mustard)]" />
             <span className="h-3 w-3 rounded-full bg-[var(--emerald)]" />
             <span className="ml-3 font-mono text-xs text-[var(--cotton)]/40">
-              ~/thari
+              ~/openloom
             </span>
           </div>
 
@@ -79,15 +79,7 @@ export default function LandingPage() {
 
           {/* CTA */}
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <a
-              href="https://github.com/anenthg/Thari.video"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg bg-[var(--crimson)] px-8 py-3 text-base font-semibold text-white transition-all hover:brightness-110 hover:shadow-[0_0_30px_rgba(217,43,43,0.3)] active:scale-[0.97]"
-            >
-              <svg className="inline-block w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-              Download for Mac
-            </a>
+            <DownloadButton />
             <a
               href="#how-it-works"
               className="rounded-lg border border-[var(--cotton)]/15 px-6 py-3 text-base font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"
@@ -95,6 +87,14 @@ export default function LandingPage() {
               How it works
             </a>
           </div>
+
+          {/* Install note */}
+          <p className="mt-4 max-w-lg font-mono text-xs leading-relaxed text-[var(--cotton)]/30">
+            Not code-signed yet. If macOS says the app is damaged, run{" "}
+            <code className="rounded bg-[var(--cotton)]/[0.08] px-1.5 py-0.5 text-[var(--cotton)]/50">
+              xattr -cr /Applications/OpenLoom.app
+            </code>
+          </p>
 
         </div>
 
@@ -132,7 +132,7 @@ export default function LandingPage() {
               <span className="h-3 w-3 rounded-full bg-[var(--mustard)]" />
               <span className="h-3 w-3 rounded-full bg-[var(--emerald)]" />
               <span className="ml-3 font-mono text-xs text-[var(--cotton)]/30">
-                thari.app/v/abc123/48271
+                openloom.live/v/abc123/48271
               </span>
             </div>
             <div className="flex aspect-video items-center justify-center bg-black/30">
@@ -236,7 +236,7 @@ export default function LandingPage() {
             <div className="text-center">
               <span className="font-mono text-sm font-bold text-[var(--emerald)]">03 — Watch</span>
               <p className="mt-2 text-sm leading-relaxed text-[var(--cotton)]/50">
-                Share a link. The Thari web player fetches directly from your Firebase, via a public API — no middleman.
+                Share a link. The OpenLoom web player fetches directly from your Firebase, via a public API — no middleman.
               </p>
             </div>
           </div>
@@ -267,12 +267,12 @@ export default function LandingPage() {
             Built in the open
           </h2>
           <p className="mt-4 text-lg text-[var(--cotton)]/50">
-            Thari is fully open source. Found a bug? Want a feature? Open an
+            OpenLoom is fully open source. Found a bug? Want a feature? Open an
             issue. Want to contribute? PRs are always welcome.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <a
-              href="https://github.com/anenthg/Thari.video"
+              href="https://github.com/anenthg/OpenLoom"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl bg-[var(--crimson)] px-10 py-4 text-lg font-semibold text-white transition-all hover:brightness-110 hover:shadow-[0_0_40px_rgba(217,43,43,0.3)] active:scale-[0.97]"
@@ -280,7 +280,7 @@ export default function LandingPage() {
               Star on GitHub
             </a>
             <a
-              href="https://github.com/anenthg/Thari.video/issues/new"
+              href="https://github.com/anenthg/OpenLoom/issues/new"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl border border-[var(--cotton)]/15 px-8 py-4 text-lg font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"
@@ -297,7 +297,7 @@ export default function LandingPage() {
       <footer className="border-t border-[var(--cotton)]/5 bg-[var(--warp-indigo)] px-6 py-8">
         <div className="mx-auto flex max-w-screen-xl items-center justify-between text-sm text-[var(--cotton)]/40">
           <span className="font-mono text-xs text-[var(--cotton)]/25">
-            thari (தறி) — Tamil for loom. Design inspired by Bhavani Jamakkalam
+            OpenLoom — inspired by the thari (தறி), Tamil for loom. Design from Bhavani Jamakkalam
           </span>
           <span className="font-mono text-xs text-[var(--cotton)]/25">git init ~{" "}
             <a
@@ -326,7 +326,7 @@ function DataFlowDiagram() {
         viewBox="0 0 720 165"
         fill="none"
         className="w-full"
-        aria-label="Data flow: Desktop App uploads to Firebase, Thari Web Player reads from Firebase"
+        aria-label="Data flow: Desktop App uploads to Firebase, OpenLoom Player reads from Firebase"
       >
         {/* ---- Node: Desktop App (center 75) ---- */}
         <rect x="0" y="5" width="150" height="100" rx="16" fill="#1A1A2E" stroke="#D92B2B" strokeWidth="2" />
@@ -347,13 +347,13 @@ function DataFlowDiagram() {
           Your Firebase
         </text>
 
-        {/* ---- Node: Thari Web Player (center 645) ---- */}
+        {/* ---- Node: OpenLoom Player (center 645) ---- */}
         <rect x="570" y="5" width="150" height="100" rx="16" fill="#1A1A2E" stroke="#0E9A57" strokeWidth="2" />
         <rect x="615" y="23" width="60" height="38" rx="4" stroke="#0E9A57" strokeWidth="1.5" fill="none" />
         <line x1="615" y1="31" x2="675" y2="31" stroke="#0E9A57" strokeWidth="1" />
         <path d="M638 36 L652 44 L638 52Z" fill="#0E9A57" />
         <text x="645" y="89" textAnchor="middle" fill="#F5F5E8" fontSize="13" fontFamily="var(--font-space-grotesk), sans-serif" fontWeight="600">
-          Thari Web Player
+          OpenLoom Player
         </text>
 
         {/* ---- Arrow: Desktop → Firebase (150 → 285) ---- */}
@@ -372,7 +372,7 @@ function DataFlowDiagram() {
           upload chunks
         </text>
 
-        {/* ---- Arrow: Firebase → Thari (435 → 570) ---- */}
+        {/* ---- Arrow: Firebase → OpenLoom (435 → 570) ---- */}
         <line x1="439" y1="55" x2="566" y2="55" stroke="#0E9A57" strokeWidth="1.5" strokeDasharray="6 4" opacity="0.4" />
         <circle r="5" fill="#0E9A57" opacity="0.9">
           <animateMotion dur="2s" repeatCount="indefinite" path="M439,55 L566,55" />
@@ -388,7 +388,7 @@ function DataFlowDiagram() {
           stream video
         </text>
 
-        {/* ---- Dashed feedback line: Thari → Firebase (reactions) ---- */}
+        {/* ---- Dashed feedback line: OpenLoom → Firebase (reactions) ---- */}
         <line x1="566" y1="75" x2="439" y2="75" stroke="#F5C518" strokeWidth="1" strokeDasharray="4 4" opacity="0.3" />
         <circle r="3" fill="#F5C518" opacity="0.7">
           <animateMotion dur="3s" repeatCount="indefinite" path="M566,75 L439,75" />
@@ -463,7 +463,7 @@ const STEPS = [
     color: "var(--crimson)",
     title: "Download & Configure",
     description:
-      "Download the Thari desktop app for macOS, open it, and connect your Firebase project. Paste your project ID, import your service account key, and you\u2019re ready to record.",
+      "Download the OpenLoom desktop app for macOS, open it, and connect your Firebase project. Paste your project ID, import your service account key, and you\u2019re ready to record.",
   },
   {
     id: "firebase",
@@ -521,7 +521,7 @@ function DesktopAppVisual() {
       <circle cx="20" cy="18" r="5" fill="var(--crimson)" />
       <circle cx="36" cy="18" r="5" fill="var(--mustard)" />
       <circle cx="52" cy="18" r="5" fill="var(--emerald)" />
-      <text x="240" y="22" textAnchor="middle" fill="rgba(245,245,232,0.4)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">Thari Setup</text>
+      <text x="240" y="22" textAnchor="middle" fill="rgba(245,245,232,0.4)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">OpenLoom Setup</text>
 
       {/* Step indicators */}
       <text x="100" y="68" textAnchor="middle" fill="var(--crimson)" fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace" fontWeight="600">1. Download</text>
@@ -533,7 +533,7 @@ function DesktopAppVisual() {
       {/* Form area */}
       <text x="60" y="110" fill="rgba(245,245,232,0.5)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Firebase Project ID</text>
       <rect x="60" y="118" width="360" height="36" rx="8" fill="rgba(245,245,232,0.04)" stroke="rgba(245,245,232,0.1)" strokeWidth="1" />
-      <text x="76" y="141" fill="rgba(245,245,232,0.25)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace">my-thari-project</text>
+      <text x="76" y="141" fill="rgba(245,245,232,0.25)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace">my-openloom-project</text>
 
       <text x="60" y="180" fill="rgba(245,245,232,0.5)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Service Account Key</text>
       <rect x="60" y="188" width="280" height="36" rx="8" fill="rgba(245,245,232,0.04)" stroke="rgba(245,245,232,0.1)" strokeWidth="1" />
@@ -624,7 +624,7 @@ function ShareRecordingVisual() {
       <rect x="52" y="154" width="120" height="76" rx="6" fill="rgba(0,0,0,0.3)" />
       <path d="M100 182 L118 192 L100 202Z" fill="var(--emerald)" opacity="0.6" />
       {/* Link details */}
-      <text x="188" y="175" fill="var(--emerald)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace">thari.video/v/abc123</text>
+      <text x="188" y="175" fill="var(--emerald)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace">openloom.live/v/abc123</text>
       <text x="188" y="195" fill="rgba(245,245,232,0.35)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Dashboard walkthrough — 2:34</text>
       <text x="188" y="215" fill="rgba(245,245,232,0.25)" fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace">Recorded just now</text>
 
@@ -716,5 +716,71 @@ function GetStartedSection() {
         </div>
       </div>
     </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Download split button with arch dropdown                            */
+/* ------------------------------------------------------------------ */
+
+const RELEASE_URL = "https://github.com/anenthg/OpenLoom/releases/latest/download";
+
+const DOWNLOAD_OPTIONS = [
+  { label: "Apple Silicon", file: "OpenLoom-0.1.0-arm64.dmg", note: "M1, M2, M3, M4" },
+  { label: "Intel", file: "OpenLoom-0.1.0.dmg", note: "Older Macs" },
+];
+
+function DownloadButton() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="flex">
+        <a
+          href={`${RELEASE_URL}/${DOWNLOAD_OPTIONS[0].file}`}
+          className="flex items-center rounded-l-lg bg-[var(--crimson)] px-6 py-3 text-base font-semibold text-white transition-all hover:brightness-110 hover:shadow-[0_0_30px_rgba(217,43,43,0.3)] active:scale-[0.97]"
+        >
+          <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+          </svg>
+          Download for Mac
+        </a>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center rounded-r-lg border-l border-white/20 bg-[var(--crimson)] px-2.5 py-3 text-white transition-all hover:brightness-110 active:scale-[0.97]"
+          aria-label="Choose architecture"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+          </svg>
+        </button>
+      </div>
+
+      {open && (
+        <div className="absolute left-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-lg border border-[var(--cotton)]/10 bg-[var(--warp-indigo)] shadow-xl shadow-black/40">
+          {DOWNLOAD_OPTIONS.map((opt) => (
+            <a
+              key={opt.file}
+              href={`${RELEASE_URL}/${opt.file}`}
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between px-4 py-3 text-sm text-[var(--cotton)] transition-colors hover:bg-[var(--cotton)]/[0.08]"
+            >
+              <span className="font-medium">{opt.label}</span>
+              <span className="text-xs text-[var(--cotton)]/40">{opt.note}</span>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

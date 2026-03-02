@@ -1,4 +1,4 @@
-# Thari.video
+# OpenLoom
 
 Open-source, self-hosted alternative to Loom. Record your screen, share a link, keep your data.
 
@@ -58,13 +58,15 @@ No central server sits between the recorder and the viewer.
 - A Firebase project on the Blaze (pay-as-you-go) plan
 - A service account key JSON for that project
 
-### Desktop app
+### Install the desktop app
 
-```bash
-cd desktop
-npm install
-npm run dev
-```
+Download the latest DMG from the [Releases page](https://github.com/anenthg/OpenLoom/releases/latest) — pick **Apple Silicon** (M1/M2/M3/M4) or **Intel** depending on your Mac.
+
+> **macOS Gatekeeper note:** The app is not yet code-signed. macOS may show *"OpenLoom is damaged and can't be opened"*. To fix this, run the following after dragging the app to `/Applications`:
+>
+> ```bash
+> xattr -cr /Applications/OpenLoom.app
+> ```
 
 On first launch the setup wizard will ask for your service account key. It then:
 1. Verifies Firestore and Cloud Storage access

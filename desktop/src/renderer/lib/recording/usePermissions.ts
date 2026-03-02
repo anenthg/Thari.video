@@ -77,7 +77,7 @@ export function usePermissions(): UsePermissionsReturn {
       instruction:
         statuses.camera === 'not-determined'
           ? 'Click Grant Access to enable camera overlay.'
-          : 'Open System Settings and grant Camera access to Thari.video.',
+          : 'Open System Settings and grant Camera access to OpenLoom.',
       requestable: statuses.camera === 'not-determined',
     },
     {
@@ -88,7 +88,7 @@ export function usePermissions(): UsePermissionsReturn {
       instruction:
         statuses.microphone === 'not-determined'
           ? 'Click Grant Access to allow microphone recording.'
-          : 'Open System Settings and grant Microphone access to Thari.video.',
+          : 'Open System Settings and grant Microphone access to OpenLoom.',
       requestable: statuses.microphone === 'not-determined',
     },
     {
@@ -96,7 +96,7 @@ export function usePermissions(): UsePermissionsReturn {
       label: 'Screen Recording',
       status: statuses.screen as PermissionStatus,
       mandatory: true,
-      instruction: 'Open System Settings and grant Screen Recording access to Thari.video.',
+      instruction: 'Open System Settings and grant Screen Recording access to OpenLoom.',
       requestable: false,
     },
   ]

@@ -21,7 +21,7 @@ const MOCK_SERVICE_ACCOUNT = JSON.stringify({
 
 function getSettingsDir(): string {
   const possibleDirs = [
-    path.join(process.env.HOME || '', 'Library', 'Application Support', 'thari-video', 'config'),
+    path.join(process.env.HOME || '', 'Library', 'Application Support', 'openloom', 'config'),
     path.join(process.env.HOME || '', 'Library', 'Application Support', 'Electron', 'config'),
   ]
   // Return whichever exists, or fallback to the Electron default
@@ -56,7 +56,7 @@ test.describe('Setup Wizard', () => {
   })
 
   test('appears on fresh launch', async () => {
-    await expect(page.getByText('Welcome to Thari.video')).toBeVisible()
+    await expect(page.getByText('Welcome to OpenLoom')).toBeVisible()
     await expect(page.getByTestId('service-account-json')).toBeVisible()
   })
 
@@ -208,7 +208,7 @@ test.describe('Sidebar & Settings', () => {
     await page.getByTestId('tab-settings').click()
     await page.getByTestId('disconnect-button').click()
 
-    await expect(page.getByText('Welcome to Thari.video')).toBeVisible()
+    await expect(page.getByText('Welcome to OpenLoom')).toBeVisible()
   })
 })
 

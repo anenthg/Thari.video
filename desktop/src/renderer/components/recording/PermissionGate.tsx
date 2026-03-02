@@ -60,7 +60,7 @@ export default function PermissionGate({ onContinue }: PermissionGateProps) {
       <div className="w-full max-w-md">
         <h2 className="text-lg font-semibold text-zinc-200 mb-1">Permissions Required</h2>
         <p className="text-sm text-zinc-500 mb-5">
-          Thari.video needs access to your screen and microphone to record. Camera is optional
+          OpenLoom needs access to your screen and microphone to record. Camera is optional
           for the webcam overlay.
         </p>
 

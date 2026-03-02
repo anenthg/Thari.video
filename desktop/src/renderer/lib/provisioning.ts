@@ -1,6 +1,6 @@
 import type { AppSettings } from './types'
 
-export type StepStatus = 'pending' | 'running' | 'done' | 'error'
+export type StepStatus = 'pending' | 'running' | 'waiting' | 'done' | 'error'
 
 export interface StepAction {
   label: string
@@ -58,6 +58,7 @@ const stageMap: Record<string, string> = {
   'check-access': 'deploy-check-access',
   'upload-source': 'deploy-upload',
   'create-function': 'deploy-create',
+  'create-function-waiting': 'deploy-create',
   'set-public-access': 'deploy-public',
 }
 
@@ -113,9 +114,14 @@ export async function runProvisioning(
       updateStep(currentDeployStep, { status: 'done' })
     }
 
-    // Mark current step as running
     currentDeployStep = stepId
-    updateStep(stepId, { status: 'running' })
+
+    if (stage === 'create-function-waiting') {
+      // Build started — now waiting for GCP to finish (can take a minute+)
+      updateStep(stepId, { status: 'waiting' })
+    } else {
+      updateStep(stepId, { status: 'running' })
+    }
   })
 
   try {

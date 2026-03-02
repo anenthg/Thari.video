@@ -16,19 +16,19 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Thari — Open Source Video Messaging",
+  title: "OpenLoom — Open Source Video Messaging",
   description: "Open-source Loom alternative you self-host. Own your threads.",
-  metadataBase: new URL("https://thari.video"),
+  metadataBase: new URL("https://openloom.live"),
   openGraph: {
-    title: "Thari — Open Source Video Messaging",
+    title: "OpenLoom — Open Source Video Messaging",
     description: "Open-source Loom alternative you self-host. Own your threads.",
-    url: "https://thari.video",
-    siteName: "Thari",
+    url: "https://openloom.live",
+    siteName: "OpenLoom",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Thari — Open Source Video Messaging",
+    title: "OpenLoom — Open Source Video Messaging",
     description: "Open-source Loom alternative you self-host. Own your threads.",
   },
 };
@@ -50,8 +50,8 @@ export default function RootLayout({
                 href="/"
                 className="font-mono text-[1.575rem] font-bold tracking-tight"
               >
-                <span className="text-[var(--cotton)]">thari</span>
-                <span className="text-[var(--cotton)]/40">.video</span>
+                <span className="text-[var(--cotton)]">Open</span>
+                <span className="text-[var(--cotton)]/40">Loom</span>
               </Link>
               <HeaderCTA />
             </div>

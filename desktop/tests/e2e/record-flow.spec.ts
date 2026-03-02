@@ -23,7 +23,7 @@ const PIXEL =
 
 function getSettingsDir(): string {
   const possibleDirs = [
-    path.join(process.env.HOME || '', 'Library', 'Application Support', 'thari-video', 'config'),
+    path.join(process.env.HOME || '', 'Library', 'Application Support', 'openloom', 'config'),
     path.join(process.env.HOME || '', 'Library', 'Application Support', 'Electron', 'config'),
   ]
   for (const dir of possibleDirs) {
@@ -299,7 +299,7 @@ test.describe('Record Flow', () => {
 
     // Upload progress → complete with share URL
     await expect(page.getByText('Upload Complete!')).toBeVisible({ timeout: 10_000 })
-    await expect(page.getByText(/thari\.video/)).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(/openloom\.live/)).toBeVisible({ timeout: 5_000 })
 
     // Share URL stays visible with copy and new recording buttons
     await expect(page.getByRole('button', { name: /Copy Link/ })).toBeVisible()

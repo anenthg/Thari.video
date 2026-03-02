@@ -83,10 +83,10 @@ export default function SetupWizard({ onConnect }: Props) {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen px-10">
-      <img src={appIcon} alt="Thari.video" className="w-20 h-20 mb-4 rounded-2xl" />
+      <img src={appIcon} alt="OpenLoom" className="w-20 h-20 mb-4 rounded-2xl" />
       <div className="font-mono text-3xl font-bold tracking-tight mb-2">
-        <span className="text-[var(--cotton)]">thari</span>
-        <span className="text-[var(--cotton)]/40">.video</span>
+        <span className="text-[var(--cotton)]">Open</span>
+        <span className="text-[var(--cotton)]/40">Loom</span>
       </div>
       <p className="text-zinc-400 mb-2">Connect your Firebase project to get started.</p>
       <div className="stripe-divider h-[3px] w-32 mb-8 rounded-full" />

@@ -72,5 +72,5 @@ export async function uploadVideo(
 // --- Share URL ---
 
 export function getShareURL(projectId: string, shortCode: string): string {
-  return `https://thari.video/v/${projectId}/${shortCode}`
+  return `https://openloom.live/v/${projectId}/${shortCode}`
 }
