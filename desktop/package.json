@@ -2,6 +2,8 @@
   "name": "thari-video",
   "version": "0.1.0",
   "description": "Screen recorder with camera PiP — federated architecture",
+  "author": "Anenth Guru",
+  "repository": "https://github.com/anenthg/Thari.video",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
