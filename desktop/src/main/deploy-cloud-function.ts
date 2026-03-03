@@ -312,34 +312,68 @@ class DeployActionError extends Error {
   }
 }
 
-function apiNotEnabledError(projectId: string): DeployActionError {
+const REQUIRED_APIS: { name: string; label: string; slug: string }[] = [
+  { name: 'cloudfunctions.googleapis.com', label: 'Cloud Functions API', slug: 'cloudfunctions.googleapis.com' },
+  { name: 'cloudbuild.googleapis.com', label: 'Cloud Build API', slug: 'cloudbuild.googleapis.com' },
+  { name: 'artifactregistry.googleapis.com', label: 'Artifact Registry API', slug: 'artifactregistry.googleapis.com' },
+  { name: 'run.googleapis.com', label: 'Cloud Run Admin API', slug: 'run.googleapis.com' },
+]
+
+async function checkDisabledApis(token: string, projectId: string): Promise<{ label: string; url: string }[]> {
+  const disabled: { label: string; url: string }[] = []
+  for (const api of REQUIRED_APIS) {
+    try {
+      const url = `https://serviceusage.googleapis.com/v1/projects/${projectId}/services/${api.name}`
+      const res = await net.fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const body = await res.json() as { state?: string }
+        if (body.state !== 'ENABLED') {
+          disabled.push({
+            label: `Enable ${api.label}`,
+            url: `https://console.cloud.google.com/apis/library/${api.slug}?project=${projectId}`,
+          })
+        }
+      } else {
+        // Can't determine state — include it to be safe
+        disabled.push({
+          label: `Enable ${api.label}`,
+          url: `https://console.cloud.google.com/apis/library/${api.slug}?project=${projectId}`,
+        })
+      }
+    } catch {
+      disabled.push({
+        label: `Enable ${api.label}`,
+        url: `https://console.cloud.google.com/apis/library/${api.slug}?project=${projectId}`,
+      })
+    }
+  }
+  return disabled
+}
+
+function apiNotEnabledErrorFromActions(actions: { label: string; url: string }[]): DeployActionError {
   return new DeployActionError(
     'Required APIs are not enabled. Please enable them in the GCP Console, then retry.',
-    [
-      {
-        label: 'Enable Cloud Functions API',
-        url: `https://console.cloud.google.com/apis/library/cloudfunctions.googleapis.com?project=${projectId}`,
-      },
-      {
-        label: 'Enable Cloud Build API',
-        url: `https://console.cloud.google.com/apis/library/cloudbuild.googleapis.com?project=${projectId}`,
-      },
-      {
-        label: 'Enable Artifact Registry API',
-        url: `https://console.cloud.google.com/apis/library/artifactregistry.googleapis.com?project=${projectId}`,
-      },
-      {
-        label: 'Enable Cloud Run API',
-        url: `https://console.cloud.google.com/apis/library/run.googleapis.com?project=${projectId}`,
-      },
-    ],
+    actions,
+  )
+}
+
+// Fallback when we can't check individual API status
+function apiNotEnabledErrorAll(projectId: string): DeployActionError {
+  return new DeployActionError(
+    'Required APIs are not enabled. Please enable them in the GCP Console, then retry.',
+    REQUIRED_APIS.map((api) => ({
+      label: `Enable ${api.label}`,
+      url: `https://console.cloud.google.com/apis/library/${api.slug}?project=${projectId}`,
+    })),
   )
 }
 
 function missingRoleError(projectId: string, saEmail: string): DeployActionError {
   return new DeployActionError(
-    `The service account lacks Cloud Functions permissions. ` +
-    `Grant the "Cloud Functions Developer" role to ${saEmail}, then retry.`,
+    `The service account ${saEmail} is missing required IAM roles. ` +
+    `Grant "Cloud Functions Developer", "Service Account User", and "Cloud Run Admin", then retry.`,
     [
       {
         label: 'Open IAM Settings',
@@ -350,19 +384,12 @@ function missingRoleError(projectId: string, saEmail: string): DeployActionError
 }
 
 async function tryEnableApis(token: string, projectId: string): Promise<void> {
-  const apis = [
-    'cloudfunctions.googleapis.com',
-    'cloudbuild.googleapis.com',
-    'artifactregistry.googleapis.com',
-    'run.googleapis.com',
-  ]
-
   // Best-effort: try to enable via Service Usage API.
   // The SA likely lacks permission — that's fine, we just log and move on.
   const projectNumber = await resolveProjectNumber(token, projectId)
   log(`Using project identifier for Service Usage: ${projectNumber} (original: ${projectId})`)
 
-  for (const api of apis) {
+  for (const api of REQUIRED_APIS.map((a) => a.name)) {
     let result = await enableApi(token, projectNumber, api)
     if (!result.ok && projectNumber !== projectId) {
       result = await enableApi(token, projectId, api)
@@ -395,15 +422,21 @@ async function checkCloudFunctionsAccess(
 
   if (isHtml) {
     // HTML error = API not enabled at all
-    log('HTML response — API not enabled')
-    throw apiNotEnabledError(projectId)
+    log('HTML response — API not enabled, checking which APIs are disabled...')
+    const disabled = await checkDisabledApis(token, projectId)
+    throw disabled.length > 0
+      ? apiNotEnabledErrorFromActions(disabled)
+      : apiNotEnabledErrorAll(projectId)
   }
 
   if (res.status === 403) {
     const lowerBody = body.toLowerCase()
     if (lowerBody.includes('has not been used') || lowerBody.includes('is disabled')) {
-      log('API not enabled (JSON 403)')
-      throw apiNotEnabledError(projectId)
+      log('API not enabled (JSON 403), checking which APIs are disabled...')
+      const disabled = await checkDisabledApis(token, projectId)
+      throw disabled.length > 0
+        ? apiNotEnabledErrorFromActions(disabled)
+        : apiNotEnabledErrorAll(projectId)
     }
     // API is enabled but SA lacks permission
     log('API enabled but SA lacks Cloud Functions permissions')
@@ -632,7 +665,10 @@ async function createOrUpdateFunction(
       errMsg.includes('has not been used') ||
       errMsg.includes('is disabled')
     ) {
-      throw apiNotEnabledError(projectId)
+      const disabled = await checkDisabledApis(token, projectId)
+      throw disabled.length > 0
+        ? apiNotEnabledErrorFromActions(disabled)
+        : apiNotEnabledErrorAll(projectId)
     }
 
     throw new Error(errBody.error?.message || res.statusText)

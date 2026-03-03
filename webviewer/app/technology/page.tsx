@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import DownloadButton from "../DownloadButton";
 
 function useScrollReveal() {
   useEffect(() => {
@@ -1007,14 +1008,7 @@ service cloud.firestore {
             rules.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="https://github.com/anenthg/OpenLoom"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-xl bg-[var(--crimson)] px-10 py-4 text-lg font-semibold text-white transition-all hover:brightness-110 hover:shadow-[0_0_40px_rgba(217,43,43,0.3)] active:scale-[0.97]"
-            >
-              Download for Mac
-            </a>
+            <DownloadButton />
             <a
               href="https://github.com/anenthg/OpenLoom"
               target="_blank"

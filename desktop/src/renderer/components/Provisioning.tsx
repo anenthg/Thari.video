@@ -14,12 +14,12 @@ function StatusIcon({ status }: { status: StepStatus }) {
     case 'pending':
       return <span className="text-zinc-500">○</span>
     case 'running':
-      return (
-        <span className="text-[var(--mustard)] inline-block animate-spin">⟳</span>
-      )
     case 'waiting':
       return (
-        <span className="text-[var(--mustard)] inline-block animate-spin">⟳</span>
+        <svg className="w-4 h-4 animate-spin text-[var(--mustard)]" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z" />
+        </svg>
       )
     case 'done':
       return <span className="text-[var(--emerald)]">✓</span>
@@ -112,7 +112,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
             {step.status === 'error' && step.actions && step.actions.length > 0 && (
               <div className="ml-7 mt-2 space-y-2">
                 <p className="text-xs text-zinc-400">
-                  Enable the required APIs in GCP Console, then click Retry:
+                  Fix the issue below, then click Retry:
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {step.actions.map((action) => (
