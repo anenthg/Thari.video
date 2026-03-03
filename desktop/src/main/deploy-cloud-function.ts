@@ -682,7 +682,7 @@ async function createOrUpdateFunction(
 async function pollOperation(
   token: string,
   operationName: string,
-  timeoutMs = 300_000,
+  timeoutMs = 600_000,
 ): Promise<string | undefined> {
   const start = Date.now()
   const interval = 5_000
@@ -723,7 +723,7 @@ async function pollOperation(
     }
   }
 
-  throw new Error('Deployment timed out. Please try again.')
+  throw new Error('Deployment timed out — the function may still be deploying in the GCP console. Wait a minute, then try again.')
 }
 
 async function getFunctionUrl(

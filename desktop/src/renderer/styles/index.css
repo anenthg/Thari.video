@@ -86,6 +86,94 @@ summary,
 /* Stripe hover effect for cards                                       */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/* Jamakkalam full stripe pattern (from webviewer)                     */
+/* ------------------------------------------------------------------ */
+
+.jamakkalam-stripes {
+  background: repeating-linear-gradient(
+    90deg,
+    /* ---- left cluster ---- */
+    var(--cotton)      0px,
+    var(--cotton)      5px,
+    var(--warp-indigo) 5px,
+    var(--warp-indigo) 8px,
+    var(--emerald)     8px,
+    var(--emerald)     28px,
+    var(--warp-indigo) 28px,
+    var(--warp-indigo) 31px,
+    var(--mustard)     31px,
+    var(--mustard)     38px,
+    var(--warp-indigo) 38px,
+    var(--warp-indigo) 41px,
+    var(--crimson)     41px,
+    var(--crimson)     60px,
+    var(--warp-indigo) 60px,
+    var(--warp-indigo) 63px,
+    var(--deep-black)  63px,
+    var(--deep-black)  68px,
+    var(--warp-indigo) 68px,
+    var(--warp-indigo) 71px,
+    var(--mustard)     71px,
+    var(--mustard)     78px,
+    /* ---- center indigo field ---- */
+    var(--warp-indigo) 78px,
+    var(--warp-indigo) 210px,
+    /* ---- right cluster (mirror) ---- */
+    var(--mustard)     210px,
+    var(--mustard)     217px,
+    var(--warp-indigo) 217px,
+    var(--warp-indigo) 220px,
+    var(--deep-black)  220px,
+    var(--deep-black)  225px,
+    var(--warp-indigo) 225px,
+    var(--warp-indigo) 228px,
+    var(--crimson)     228px,
+    var(--crimson)     247px,
+    var(--warp-indigo) 247px,
+    var(--warp-indigo) 250px,
+    var(--mustard)     250px,
+    var(--mustard)     257px,
+    var(--warp-indigo) 257px,
+    var(--warp-indigo) 260px,
+    var(--emerald)     260px,
+    var(--emerald)     280px,
+    var(--warp-indigo) 280px,
+    var(--warp-indigo) 283px,
+    var(--cotton)      283px,
+    var(--cotton)      288px,
+    var(--warp-indigo) 288px,
+    var(--warp-indigo) 290px
+  );
+}
+
+@keyframes stripe-shimmer {
+  0%   { background-position: 0 0; }
+  100% { background-position: 290px 0; }
+}
+
+.jamakkalam-stripes-animated {
+  animation: stripe-shimmer 30s linear infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* Glassmorphism terminal card                                         */
+/* ------------------------------------------------------------------ */
+
+.glass-terminal {
+  background: rgba(26, 26, 46, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(245, 245, 232, 0.08);
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(245, 245, 232, 0.04);
+}
+
+/* ------------------------------------------------------------------ */
+/* Stripe hover effect for cards                                       */
+/* ------------------------------------------------------------------ */
+
 .stripe-hover-border {
   position: relative;
   overflow: hidden;

@@ -588,10 +588,10 @@ function FirebaseSetupVisual() {
     { label: "Cloud Storage", done: true },
     { label: "Cloud Firestore", done: true },
     { label: "Cloud Functions", done: true },
-    { label: "Security Rules", done: false },
+    { label: "IAM Roles", done: false },
   ];
   return (
-    <svg viewBox="0 0 480 300" fill="none" className="w-full" aria-label="Firebase setup checklist mockup">
+    <svg viewBox="0 0 480 250" fill="none" className="w-full" aria-label="Firebase setup checklist mockup">
       {/* Window chrome */}
       <rect x="0" y="0" width="480" height="300" rx="12" fill="#0A0A12" stroke="rgba(245,245,232,0.08)" strokeWidth="1" />
       <rect x="0" y="0" width="480" height="36" rx="12" fill="#141422" />
@@ -621,10 +621,6 @@ function FirebaseSetupVisual() {
         );
       })}
 
-      {/* Terminal snippet */}
-      <rect x="40" y="240" width="400" height="44" rx="8" fill="rgba(245,245,232,0.02)" stroke="rgba(245,245,232,0.06)" strokeWidth="1" />
-      <text x="56" y="266" fill="var(--emerald)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace" opacity="0.8">$</text>
-      <text x="72" y="266" fill="rgba(245,245,232,0.5)" fontSize="11" fontFamily="var(--font-jetbrains-mono), monospace">firebase deploy --only functions</text>
     </svg>
   );
 }
@@ -647,7 +643,7 @@ function ShareRecordingVisual() {
       <line x1="40" y1="72" x2="440" y2="72" stroke="rgba(245,245,232,0.06)" strokeWidth="1" />
 
       <text x="40" y="92" fill="rgba(245,245,232,0.35)" fontSize="12" fontFamily="var(--font-space-grotesk), sans-serif">Subject:</text>
-      <text x="96" y="92" fill="rgba(245,245,232,0.6)" fontSize="12" fontFamily="var(--font-space-grotesk), sans-serif">Quick walkthrough of the new dashboard</text>
+      <text x="96" y="92" fill="rgba(245,245,232,0.6)" fontSize="12" fontFamily="var(--font-space-grotesk), sans-serif">Quick walkthrough of the OpenLoom website</text>
       <line x1="40" y1="102" x2="440" y2="102" stroke="rgba(245,245,232,0.06)" strokeWidth="1" />
 
       {/* Body text */}
@@ -659,10 +655,11 @@ function ShareRecordingVisual() {
       <rect x="52" y="154" width="120" height="76" rx="6" fill="rgba(0,0,0,0.3)" />
       <path d="M100 182 L118 192 L100 202Z" fill="var(--emerald)" opacity="0.6" />
       {/* Link details */}
-      <text x="188" y="175" fill="var(--emerald)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace">openloom.live/v/abc123</text>
-      <text x="188" y="195" fill="rgba(245,245,232,0.35)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Dashboard walkthrough — 2:34</text>
-      <text x="188" y="215" fill="rgba(245,245,232,0.25)" fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace">Recorded just now</text>
-
+      <a href="https://openloom.live/v/Zi1hbmVudGgtaG9zdGVkLWJhY2t1cA/Dgt8PUUf" target="_blank" rel="noopener noreferrer" style={{ cursor: 'pointer' }}>
+        <text x="188" y="175" fill="var(--emerald)" fontSize="12" fontFamily="var(--font-jetbrains-mono), monospace" textDecoration="underline">openloom.live/v/jfjf...</text>
+        <text x="188" y="195" fill="rgba(245,245,232,0.35)" fontSize="11" fontFamily="var(--font-space-grotesk), sans-serif">Website walkthrough — 2:34</text>
+        <text x="188" y="215" fill="rgba(245,245,232,0.25)" fontSize="10" fontFamily="var(--font-jetbrains-mono), monospace">Recorded just now</text>
+      </a>
       {/* Send button */}
       <rect x="360" y="256" width="80" height="34" rx="8" fill="var(--emerald)" />
       <text x="400" y="278" textAnchor="middle" fill="white" fontSize="13" fontFamily="var(--font-space-grotesk), sans-serif" fontWeight="600">Send</text>

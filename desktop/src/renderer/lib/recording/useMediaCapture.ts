@@ -60,9 +60,10 @@ export function useMediaCapture() {
 
       // Acquire mic AFTER screen capture. Safe because we skipped system
       // audio above — Chromium's audio subsystem stays clean.
+      // Note: TCC permissions are already granted by PermissionGate during
+      // onboarding — no need to re-request here.
       let mic: MediaStream | null = null
       if (enableMic) {
-        await window.api.requestMicAccess()
         mic = await acquireMic(micDeviceId)
       }
 

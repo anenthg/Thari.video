@@ -71,7 +71,7 @@ export function createCanvasCompositor(
       // Draw camera to fill the circle
       const camW = cameraVideo.videoWidth
       const camH = cameraVideo.videoHeight
-      const camScale = Math.max(pipDiameter / camW, pipDiameter / camH)
+      const camScale = Math.max(pipDiameter / camW, pipDiameter / camH) * 1.15
       const drawW = camW * camScale
       const drawH = camH * camScale
       const offsetX = pipX + (pipDiameter - drawW) / 2

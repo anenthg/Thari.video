@@ -53,7 +53,15 @@ export default function UploadProgress({ progress, shareURL, onNewRecording }: U
               className="text-[var(--crimson)] hover:brightness-110 text-sm break-all inline-flex items-center gap-1.5"
             >
               <LinkIcon className="w-4 h-4 shrink-0" />
-              {shareURL}
+              {(() => {
+                try {
+                  const u = new URL(shareURL)
+                  const path = u.pathname.length > 8 ? u.pathname.slice(0, 8) + '...' : u.pathname
+                  return u.host + path
+                } catch {
+                  return shareURL
+                }
+              })()}
             </a>
           </div>
 

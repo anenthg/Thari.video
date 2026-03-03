@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { DesktopSource } from '../../lib/types'
 import type { DeviceInfo } from '../../lib/recording/useDeviceList'
 import { CameraIcon, CameraOffIcon, MicIcon, MicOffIcon, HDIcon } from '../icons'
@@ -44,6 +44,52 @@ export default function SourcePicker({
   const [tab, setTab] = useState<Tab>(screens.length > 0 ? 'screens' : 'windows')
 
   const items = tab === 'screens' ? screens : windows
+
+  // Camera preview stream
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+
+  useEffect(() => {
+    if (!enableCamera) {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop())
+        streamRef.current = null
+      }
+      if (videoRef.current) videoRef.current.srcObject = null
+      return
+    }
+
+    let cancelled = false
+    const constraints: MediaTrackConstraints = selectedCameraId
+      ? { deviceId: { exact: selectedCameraId }, width: 160, height: 160 }
+      : { width: 160, height: 160, facingMode: 'user' }
+
+    navigator.mediaDevices
+      .getUserMedia({ video: constraints })
+      .then((stream) => {
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop())
+          return
+        }
+        streamRef.current = stream
+        if (videoRef.current) videoRef.current.srcObject = stream
+
+        // Pin the resolved device ID so recording uses the exact same camera
+        if (!selectedCameraId) {
+          const actualId = stream.getVideoTracks()[0]?.getSettings()?.deviceId
+          if (actualId) onSelectCamera(actualId)
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop())
+        streamRef.current = null
+      }
+    }
+  }, [enableCamera, selectedCameraId, onSelectCamera])
 
   return (
     <div className="flex flex-col h-full p-6">
@@ -117,7 +163,29 @@ export default function SourcePicker({
       </div>
 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-800">
-        <h2 className="text-lg font-semibold text-zinc-200">Choose a source</h2>
+        <div className="flex items-center gap-3">
+          {/* Camera preview circle */}
+          <div
+            className={`w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 transition-colors ${
+              enableCamera ? 'border-[var(--emerald)]' : 'border-zinc-700 bg-zinc-800'
+            }`}
+          >
+            {enableCamera ? (
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover scale-[1.15]"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-zinc-600">
+                <CameraOffIcon className="w-4 h-4" />
+              </div>
+            )}
+          </div>
+          <h2 className="text-sm font-semibold text-zinc-200">Choose a source</h2>
+        </div>
         <div className="flex gap-2 items-center">
           <DeviceDropdown
             enabled={enableCamera}
