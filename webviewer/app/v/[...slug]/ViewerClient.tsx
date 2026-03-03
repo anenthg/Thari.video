@@ -447,18 +447,18 @@ export default function VideoViewerPage() {
 
   if (phase === "loading") {
     return (
-      <>
+      <div className="flex min-h-[calc(100dvh-theme(spacing.14)-4px)] flex-col">
         {stripe}
         <main className="flex flex-1 items-center justify-center bg-white py-20">
           <BrandLoader />
         </main>
-      </>
+      </div>
     );
   }
 
   if (phase === "not_found") {
     return (
-      <>
+      <div className="flex min-h-[calc(100dvh-theme(spacing.14)-4px)] flex-col">
         {stripe}
         <main className="flex flex-1 items-center justify-center bg-white py-20">
           <div className="text-center">
@@ -475,13 +475,13 @@ export default function VideoViewerPage() {
             </p>
           </div>
         </main>
-      </>
+      </div>
     );
   }
 
   if (phase === "error") {
     return (
-      <>
+      <div className="flex min-h-[calc(100dvh-theme(spacing.14)-4px)] flex-col">
         {stripe}
         <main className="flex flex-1 items-center justify-center bg-white py-20">
           <div className="text-center">
@@ -496,7 +496,7 @@ export default function VideoViewerPage() {
             <p className="mt-2 text-sm text-gray-500">{errorMsg}</p>
           </div>
         </main>
-      </>
+      </div>
     );
   }
 
@@ -512,9 +512,9 @@ export default function VideoViewerPage() {
   const reactionCount = reactions.length;
 
   return (
-    <>
+    <div className="flex min-h-[calc(100dvh-theme(spacing.14)-4px)] flex-col">
     {stripe}
-    <main className="min-h-screen bg-white">
+    <main className="flex-1 bg-white">
       <div className="mx-auto max-w-screen-lg px-6 py-8">
         {/* Video player */}
         <div
@@ -674,6 +674,6 @@ export default function VideoViewerPage() {
         </span>
       </div>
     </footer>
-    </>
+    </div>
   );
 }
