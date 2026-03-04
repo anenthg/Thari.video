@@ -270,6 +270,15 @@ export default function LandingPage() {
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </Link>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--mustard)]/20 px-5 py-2.5 text-sm font-medium text-[var(--mustard)]/70 transition-all hover:border-[var(--mustard)]/40 hover:bg-[var(--mustard)]/10 hover:text-[var(--mustard)]"
+            >
+              Cost estimates
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
         </div>
       </section>

@@ -136,7 +136,8 @@ export default function SetupWizard({ onConnect }: Props) {
                     <div className="mt-1 space-y-0.5 text-xs text-zinc-400">
                       <p>→ Upgrade Project → Existing / New Billing Account</p>
                       <p>→ Link Cloud Billing Account → Blaze Plan</p>
-                      <p>→ No cost location → Start in production mode</p>
+                      <p>→ Pick a US region (<span className="text-zinc-300">us-central1</span>, <span className="text-zinc-300">us-east1</span>, or <span className="text-zinc-300">us-west1</span>) for 5 GB free storage</p>
+                      <p>→ Start in production mode</p>
                     </div>
                   </div>
                 </div>
