@@ -39,8 +39,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased min-h-screen bg-[var(--warp-indigo)] text-[var(--cotton)]`}
       >
         <header className="sticky top-0 z-50">
