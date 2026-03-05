@@ -9,9 +9,9 @@ import DownloadButton from "./DownloadButton";
 /* ------------------------------------------------------------------ */
 
 const INFRA_PROVIDERS = [
-  { name: "Firebase", color: "var(--mustard)", status: "ready" },
-  { name: "Supabase", color: "var(--emerald)", status: "soon" },
+  { name: "Supabase", color: "var(--emerald)", status: "ready" },
   { name: "Convex", color: "var(--crimson)", status: "ready" },
+  { name: "Firebase", color: "var(--mustard)", status: "ready" },
 ] as const;
 
 function BackendInfraDropdown() {
@@ -230,7 +230,7 @@ export default function LandingPage() {
               {
                 icon: "selfhost",
                 title: "Self-hosted",
-                desc: "Recordings live on your own backend \u2014 Firebase, Convex, or Supabase. No third-party servers, no vendor lock-in.",
+                desc: "Recordings live on your own backend \u2014 Supabase, Convex, or Firebase. No third-party servers, no vendor lock-in.",
               },
               {
                 icon: "screen",
@@ -451,7 +451,7 @@ function DataFlowDiagram() {
           Your Backend
         </text>
         <text x="360" y="103" textAnchor="middle" fill="#F5C518" fontSize="9" fontFamily="var(--font-jetbrains-mono), monospace" opacity="0.5">
-          Firebase · Supabase · Convex
+          Supabase · Convex · Firebase
         </text>
 
         {/* ---- Node: OpenLoom Player (center 645) ---- */}
@@ -659,9 +659,9 @@ function DesktopAppVisual() {
 }
 
 const SETUP_PROVIDERS = [
-  { id: "firebase", label: "Firebase", color: "var(--mustard)" },
-  { id: "convex", label: "Convex", color: "var(--crimson)" },
   { id: "supabase", label: "Supabase", color: "var(--emerald)" },
+  { id: "convex", label: "Convex", color: "var(--crimson)" },
+  { id: "firebase", label: "Firebase", color: "var(--mustard)" },
 ] as const;
 
 type SetupProviderId = (typeof SETUP_PROVIDERS)[number]["id"];
@@ -679,10 +679,9 @@ const PROVIDER_CHECKLIST: Record<SetupProviderId, { label: string; done: boolean
     { label: "Backend Functions", done: true },
   ],
   supabase: [
-    { label: "Create Project", done: false },
-    { label: "Storage Bucket", done: false },
-    { label: "Edge Functions", done: false },
-    { label: "Row Level Security", done: false },
+    { label: "Create a Supabase project", done: true },
+    { label: "Generate an Access Token", done: true },
+    { label: "Paste Project URL + Access Token", done: true },
   ],
 };
 
@@ -693,10 +692,10 @@ const PROVIDER_CONSOLE: Record<SetupProviderId, string> = {
 };
 
 function SetupVisual() {
-  const [provider, setProvider] = useState<SetupProviderId>("firebase");
+  const [provider, setProvider] = useState<SetupProviderId>("supabase");
   const items = PROVIDER_CHECKLIST[provider];
   const activeProvider = SETUP_PROVIDERS.find((p) => p.id === provider)!;
-  const isComingSoon = provider === "supabase";
+  const isComingSoon = false;
 
   return (
     <div>
@@ -719,11 +718,6 @@ function SetupVisual() {
                 style={{ backgroundColor: p.color, opacity: isActive ? 1 : 0.4 }}
               />
               {p.label}
-              {p.id === "supabase" && (
-                <span className="ml-1 rounded-full bg-[var(--cotton)]/[0.08] px-1.5 py-0.5 text-[10px] text-[var(--cotton)]/30">
-                  soon
-                </span>
-              )}
               {isActive && (
                 <span
                   className="absolute bottom-0 left-0 right-0 h-[2px]"

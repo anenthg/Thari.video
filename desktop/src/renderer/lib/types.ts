@@ -1,4 +1,4 @@
-export type BackendProvider = 'firebase' | 'convex'
+export type BackendProvider = 'firebase' | 'convex' | 'supabase'
 
 export interface AppSettings {
   provider?: BackendProvider
@@ -13,6 +13,12 @@ export interface AppSettings {
   convexDeploymentUrl?: string
   convexDeploymentName?: string
   convexHttpActionsUrl?: string
+  // Supabase fields
+  supabaseProjectUrl?: string
+  supabaseProjectRef?: string
+  supabaseAccessToken?: string
+  supabaseServiceRoleKey?: string
+  supabaseAnonKey?: string
 }
 
 export interface Video {

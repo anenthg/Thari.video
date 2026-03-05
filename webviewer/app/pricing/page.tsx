@@ -8,7 +8,7 @@ import DownloadButton from "../DownloadButton";
 /* Types & Data                                                       */
 /* ------------------------------------------------------------------ */
 
-type Provider = "firebase" | "supabase" | "convex";
+type Provider = "supabase" | "convex" | "firebase";
 
 interface ShortVersionCard {
   label: string;
@@ -38,9 +38,16 @@ interface SourceLink {
   href: string;
 }
 
+interface CostPerMinute {
+  hd: string;
+  nonHd: string;
+  note: string;
+}
+
 interface ProviderConfig {
   name: string;
   color: string;
+  badge: string;
   status: "available" | "coming-soon";
   tagline: string;
   shortVersion: ShortVersionCard[];
@@ -50,6 +57,7 @@ interface ProviderConfig {
     description: string;
     rows: ViewingBudgetRow[];
   };
+  costPerMinute: CostPerMinute;
   tldr: {
     summary: React.ReactNode;
     footnote: string;
@@ -78,9 +86,233 @@ const FunctionsIcon = (
 );
 
 const PROVIDERS: Record<Provider, ProviderConfig> = {
+  supabase: {
+    name: "Supabase",
+    color: "var(--emerald)",
+    badge: "Developer friendly",
+    status: "available",
+    tagline:
+      "Supabase gives you Postgres + Storage + Edge Functions on a generous free tier. Here\u2019s what you get.",
+    shortVersion: [
+      {
+        label: "HD Mode",
+        color: "var(--crimson)",
+        value: "~33m",
+        subtitle: "of recording for free",
+        details: ["1920 \u00d7 1080 \u00b7 5 Mbps", "~30 MB / minute"],
+      },
+      {
+        label: "Non-HD Mode",
+        color: "var(--mustard)",
+        value: "~1h",
+        subtitle: "of recording for free",
+        details: ["1280 \u00d7 720 \u00b7 2.5 Mbps", "~15 MB / minute"],
+      },
+      {
+        label: "Beyond Free",
+        color: "var(--emerald)",
+        value: "$25",
+        subtitle: "per month (Pro plan)",
+        details: ["100 GB storage", "250 GB bandwidth"],
+      },
+    ],
+    breakdown: [
+      {
+        title: "File Storage",
+        badge: "bottleneck",
+        badgeColor: "var(--mustard)",
+        description:
+          "Where your video files live. 1 GB free storage is the main constraint.",
+        icon: CloudIcon,
+        stats: [
+          { value: "1 GB", label: "free storage" },
+          { value: "2 GB", label: "free egress / month" },
+        ],
+        callout: {
+          title: "Inactivity pause",
+          body: "Free-tier Supabase projects are paused after 7 days of inactivity. Your data is preserved but the project must be manually resumed. Keep this in mind if sharing links to recordings.",
+        },
+      },
+      {
+        title: "Database (Postgres)",
+        badge: "not a concern",
+        badgeColor: "var(--emerald)",
+        description:
+          "Stores video metadata. 500 MB is more than enough for thousands of recordings.",
+        icon: DatabaseIcon,
+        stats: [
+          { value: "500 MB", label: "database space" },
+          { value: "2", label: "free projects" },
+        ],
+      },
+      {
+        title: "Edge Functions",
+        badge: "not a concern",
+        badgeColor: "var(--crimson)",
+        description:
+          "Serverless functions to serve your videos. 500K invocations is plenty for personal or team use.",
+        icon: FunctionsIcon,
+        stats: [
+          { value: "500K", label: "invocations / month" },
+          { value: "100", label: "concurrent connections" },
+        ],
+      },
+    ],
+    viewingBudget: {
+      freeEgress: "2 GB",
+      description:
+        "2 GB of free egress per month is limited. Videos will eat through this quickly.",
+      rows: [
+        { video: "2 min HD (~60 MB)", views: "~33" },
+        { video: "5 min HD (~150 MB)", views: "~13" },
+        { video: "5 min non-HD (~75 MB)", views: "~26" },
+        { video: "10 min HD (~300 MB)", views: "~6" },
+      ],
+    },
+    tldr: {
+      summary: (
+        <>
+          Supabase&apos;s free tier gives you{" "}
+          <span className="text-[var(--cotton)]">1 GB of storage</span> and{" "}
+          <span className="text-[var(--cotton)]">2 GB of egress</span>. That&apos;s
+          about 33 minutes of HD recording and very limited viewing. Great for
+          testing, but you&apos;ll likely need the Pro plan ($25/mo) for real
+          usage.
+        </>
+      ),
+      footnote:
+        "For the most generous free tier, consider Firebase — 5 GB storage and 100 GB egress at zero cost.",
+    },
+    costPerMinute: {
+      hd: "$0.0075",
+      nonHd: "$0.00375",
+      note: "Based on Pro plan ($25/mo for 100 GB storage)",
+    },
+    sourceLinks: [
+      {
+        label: "Supabase Pricing",
+        href: "https://supabase.com/pricing",
+      },
+      {
+        label: "Supabase Storage Docs",
+        href: "https://supabase.com/docs/guides/storage",
+      },
+    ],
+  },
+
+  convex: {
+    name: "Convex",
+    color: "var(--crimson)",
+    badge: "Developer friendly",
+    status: "available",
+    tagline:
+      "OpenLoom supports Convex as an alternative backend. Here\u2019s what the free tier looks like.",
+    shortVersion: [
+      {
+        label: "HD Mode",
+        color: "var(--crimson)",
+        value: "~33m",
+        subtitle: "of recording for free",
+        details: ["1920 \u00d7 1080 \u00b7 5 Mbps", "~30 MB / minute"],
+      },
+      {
+        label: "Non-HD Mode",
+        color: "var(--mustard)",
+        value: "~1h",
+        subtitle: "of recording for free",
+        details: ["1280 \u00d7 720 \u00b7 2.5 Mbps", "~15 MB / minute"],
+      },
+      {
+        label: "Beyond Free",
+        color: "var(--emerald)",
+        value: "$25",
+        subtitle: "per dev / month (Pro plan)",
+        details: ["100 GB storage", "50 GB bandwidth"],
+      },
+    ],
+    breakdown: [
+      {
+        title: "File Storage",
+        badge: "bottleneck",
+        badgeColor: "var(--mustard)",
+        description:
+          "Where your video files live. 1 GB free storage and 1 GB egress are tight constraints.",
+        icon: CloudIcon,
+        stats: [
+          { value: "1 GB", label: "free storage" },
+          { value: "1 GB", label: "free egress / month" },
+        ],
+      },
+      {
+        title: "Database",
+        badge: "not a concern",
+        badgeColor: "var(--emerald)",
+        description:
+          "Stores video metadata. 0.5 GB is sufficient for video metadata.",
+        icon: DatabaseIcon,
+        stats: [
+          { value: "0.5 GB", label: "database space" },
+          { value: "1M", label: "documents" },
+        ],
+      },
+      {
+        title: "Functions",
+        badge: "not a concern",
+        badgeColor: "var(--crimson)",
+        description:
+          "Serverless functions that serve your videos. 1M calls should handle normal usage comfortably.",
+        icon: FunctionsIcon,
+        stats: [
+          { value: "1M", label: "function calls / month" },
+          { value: "25M", label: "bandwidth (actions)" },
+        ],
+      },
+    ],
+    viewingBudget: {
+      freeEgress: "1 GB",
+      description:
+        "1 GB of free egress per month is very limited. You\u2019ll hit this quickly with video content.",
+      rows: [
+        { video: "2 min HD (~60 MB)", views: "~16" },
+        { video: "5 min HD (~150 MB)", views: "~6" },
+        { video: "5 min non-HD (~75 MB)", views: "~13" },
+        { video: "10 min HD (~300 MB)", views: "~3" },
+      ],
+    },
+    tldr: {
+      summary: (
+        <>
+          Convex&apos;s free tier gives you{" "}
+          <span className="text-[var(--cotton)]">1 GB of storage</span> and{" "}
+          <span className="text-[var(--cotton)]">1 GB of egress</span>. That&apos;s
+          about 33 minutes of HD recording and very few free views. Best for
+          prototyping — real usage needs the Pro plan ($25/dev/mo).
+        </>
+      ),
+      footnote:
+        "For the most generous free tier, consider Firebase — 5 GB storage and 100 GB egress at zero cost.",
+    },
+    costPerMinute: {
+      hd: "$0.0075",
+      nonHd: "$0.00375",
+      note: "Based on Pro plan ($25/dev/mo for 100 GB storage)",
+    },
+    sourceLinks: [
+      {
+        label: "Convex Pricing",
+        href: "https://www.convex.dev/pricing",
+      },
+      {
+        label: "Convex Limits Docs",
+        href: "https://docs.convex.dev/production/state/limits",
+      },
+    ],
+  },
+
   firebase: {
     name: "Firebase",
     color: "var(--mustard)",
+    badge: "Cost effective",
     status: "available",
     tagline:
       "OpenLoom is free and open source. Your recordings live on Firebase\u2019s generous free tier \u2014 here\u2019s exactly what you get.",
@@ -175,6 +407,11 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
       footnote:
         "If you outgrow 5 GB, it\u2019s $0.02/GB/month. That\u2019s about the cost of a packet of biscuits for 50 GB of recordings.",
     },
+    costPerMinute: {
+      hd: "$0.0006",
+      nonHd: "$0.0003",
+      note: "Based on $0.02/GB storage (pay-as-you-go beyond 5 GB free)",
+    },
     sourceLinks: [
       {
         label: "GCP Always Free tier",
@@ -183,217 +420,6 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
       {
         label: "Firebase Pricing",
         href: "https://firebase.google.com/pricing",
-      },
-    ],
-  },
-
-  supabase: {
-    name: "Supabase",
-    color: "var(--emerald)",
-    status: "coming-soon",
-    tagline:
-      "Supabase support is coming soon. Here\u2019s what the free tier would look like for planning purposes.",
-    shortVersion: [
-      {
-        label: "HD Mode",
-        color: "var(--crimson)",
-        value: "~33m",
-        subtitle: "of recording for free",
-        details: ["1920 \u00d7 1080 \u00b7 5 Mbps", "~30 MB / minute"],
-      },
-      {
-        label: "Non-HD Mode",
-        color: "var(--mustard)",
-        value: "~1h",
-        subtitle: "of recording for free",
-        details: ["1280 \u00d7 720 \u00b7 2.5 Mbps", "~15 MB / minute"],
-      },
-      {
-        label: "Beyond Free",
-        color: "var(--emerald)",
-        value: "$25",
-        subtitle: "per month (Pro plan)",
-        details: ["100 GB storage", "250 GB bandwidth"],
-      },
-    ],
-    breakdown: [
-      {
-        title: "File Storage",
-        badge: "bottleneck",
-        badgeColor: "var(--mustard)",
-        description:
-          "Where your video files live. 1 GB free storage is the main constraint.",
-        icon: CloudIcon,
-        stats: [
-          { value: "1 GB", label: "free storage" },
-          { value: "2 GB", label: "free egress / month" },
-        ],
-        callout: {
-          title: "Inactivity pause",
-          body: "Free-tier Supabase projects are paused after 7 days of inactivity. Your data is preserved but the project must be manually resumed. Keep this in mind if sharing links to recordings.",
-        },
-      },
-      {
-        title: "Database (Postgres)",
-        badge: "not a concern",
-        badgeColor: "var(--emerald)",
-        description:
-          "Stores video metadata. 500 MB is more than enough for thousands of recordings.",
-        icon: DatabaseIcon,
-        stats: [
-          { value: "500 MB", label: "database space" },
-          { value: "2", label: "free projects" },
-        ],
-      },
-      {
-        title: "Edge Functions",
-        badge: "not a concern",
-        badgeColor: "var(--crimson)",
-        description:
-          "Serverless functions to serve your videos. 500K invocations is plenty for personal or team use.",
-        icon: FunctionsIcon,
-        stats: [
-          { value: "500K", label: "invocations / month" },
-          { value: "100", label: "concurrent connections" },
-        ],
-      },
-    ],
-    viewingBudget: {
-      freeEgress: "2 GB",
-      description:
-        "2 GB of free egress per month is limited. Videos will eat through this quickly.",
-      rows: [
-        { video: "2 min HD (~60 MB)", views: "~33" },
-        { video: "5 min HD (~150 MB)", views: "~13" },
-        { video: "5 min non-HD (~75 MB)", views: "~26" },
-        { video: "10 min HD (~300 MB)", views: "~6" },
-      ],
-    },
-    tldr: {
-      summary: (
-        <>
-          Supabase&apos;s free tier gives you{" "}
-          <span className="text-[var(--cotton)]">1 GB of storage</span> and{" "}
-          <span className="text-[var(--cotton)]">2 GB of egress</span>. That&apos;s
-          about 33 minutes of HD recording and very limited viewing. Great for
-          testing, but you&apos;ll likely need the Pro plan ($25/mo) for real
-          usage.
-        </>
-      ),
-      footnote:
-        "For the most generous free tier, consider Firebase — 5 GB storage and 100 GB egress at zero cost.",
-    },
-    sourceLinks: [
-      {
-        label: "Supabase Pricing",
-        href: "https://supabase.com/pricing",
-      },
-      {
-        label: "Supabase Storage Docs",
-        href: "https://supabase.com/docs/guides/storage",
-      },
-    ],
-  },
-
-  convex: {
-    name: "Convex",
-    color: "var(--crimson)",
-    status: "available",
-    tagline:
-      "OpenLoom supports Convex as an alternative backend. Here\u2019s what the free tier looks like.",
-    shortVersion: [
-      {
-        label: "HD Mode",
-        color: "var(--crimson)",
-        value: "~33m",
-        subtitle: "of recording for free",
-        details: ["1920 \u00d7 1080 \u00b7 5 Mbps", "~30 MB / minute"],
-      },
-      {
-        label: "Non-HD Mode",
-        color: "var(--mustard)",
-        value: "~1h",
-        subtitle: "of recording for free",
-        details: ["1280 \u00d7 720 \u00b7 2.5 Mbps", "~15 MB / minute"],
-      },
-      {
-        label: "Beyond Free",
-        color: "var(--emerald)",
-        value: "$25",
-        subtitle: "per dev / month (Pro plan)",
-        details: ["100 GB storage", "50 GB bandwidth"],
-      },
-    ],
-    breakdown: [
-      {
-        title: "File Storage",
-        badge: "bottleneck",
-        badgeColor: "var(--mustard)",
-        description:
-          "Where your video files live. 1 GB free storage and 1 GB egress are tight constraints.",
-        icon: CloudIcon,
-        stats: [
-          { value: "1 GB", label: "free storage" },
-          { value: "1 GB", label: "free egress / month" },
-        ],
-      },
-      {
-        title: "Database",
-        badge: "not a concern",
-        badgeColor: "var(--emerald)",
-        description:
-          "Stores video metadata. 0.5 GB is sufficient for video metadata.",
-        icon: DatabaseIcon,
-        stats: [
-          { value: "0.5 GB", label: "database space" },
-          { value: "1M", label: "documents" },
-        ],
-      },
-      {
-        title: "Functions",
-        badge: "not a concern",
-        badgeColor: "var(--crimson)",
-        description:
-          "Serverless functions that serve your videos. 1M calls should handle normal usage comfortably.",
-        icon: FunctionsIcon,
-        stats: [
-          { value: "1M", label: "function calls / month" },
-          { value: "25M", label: "bandwidth (actions)" },
-        ],
-      },
-    ],
-    viewingBudget: {
-      freeEgress: "1 GB",
-      description:
-        "1 GB of free egress per month is very limited. You\u2019ll hit this quickly with video content.",
-      rows: [
-        { video: "2 min HD (~60 MB)", views: "~16" },
-        { video: "5 min HD (~150 MB)", views: "~6" },
-        { video: "5 min non-HD (~75 MB)", views: "~13" },
-        { video: "10 min HD (~300 MB)", views: "~3" },
-      ],
-    },
-    tldr: {
-      summary: (
-        <>
-          Convex&apos;s free tier gives you{" "}
-          <span className="text-[var(--cotton)]">1 GB of storage</span> and{" "}
-          <span className="text-[var(--cotton)]">1 GB of egress</span>. That&apos;s
-          about 33 minutes of HD recording and very few free views. Best for
-          prototyping — real usage needs the Pro plan ($25/dev/mo).
-        </>
-      ),
-      footnote:
-        "For the most generous free tier, consider Firebase — 5 GB storage and 100 GB egress at zero cost.",
-    },
-    sourceLinks: [
-      {
-        label: "Convex Pricing",
-        href: "https://www.convex.dev/pricing",
-      },
-      {
-        label: "Convex Limits Docs",
-        href: "https://docs.convex.dev/production/state/limits",
       },
     ],
   },
@@ -461,7 +487,7 @@ function useScrollReveal(deps: unknown[] = []) {
 /* ------------------------------------------------------------------ */
 
 export default function PricingPage() {
-  const [provider, setProvider] = useState<Provider>("firebase");
+  const [provider, setProvider] = useState<Provider>("supabase");
   const config = PROVIDERS[provider];
 
   useScrollReveal([provider]);
@@ -526,17 +552,16 @@ export default function PricingPage() {
                   }
                 >
                   {pc.name}
-                  {p === "firebase" && (
-                    <span
-                      className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                        isActive
-                          ? "bg-[var(--warp-indigo)]/30 text-[var(--warp-indigo)]"
-                          : "bg-[var(--mustard)]/15 text-[var(--mustard)]"
-                      }`}
-                    >
-                      Recommended
-                    </span>
-                  )}
+                  <span
+                    className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      isActive
+                        ? "bg-[var(--warp-indigo)]/30 text-[var(--warp-indigo)]"
+                        : `text-[var(--cotton)]/40`
+                    }`}
+                    style={!isActive ? { backgroundColor: `color-mix(in srgb, ${pc.color} 12%, transparent)` } : undefined}
+                  >
+                    {pc.badge}
+                  </span>
                 </button>
               );
             })}
@@ -868,6 +893,32 @@ export default function PricingPage() {
                     {provider === "firebase"
                       ? "$0.02/GB/month — ~$1/mo for 50 GB"
                       : `${config.name} Pro: ${config.shortVersion[2].subtitle}`}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-[var(--cotton)]/8 bg-[var(--cotton)]/[0.03] px-4 py-3">
+                  <p className="text-xs text-[var(--cotton)]/30">
+                    Cost per minute of recording
+                  </p>
+                  <div className="mt-2 grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="font-mono text-lg font-bold" style={{ color: config.color }}>
+                        {config.costPerMinute.hd}
+                      </p>
+                      <p className="text-[10px] text-[var(--cotton)]/40">
+                        per min &middot; HD (1080p)
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-mono text-lg font-bold" style={{ color: config.color }}>
+                        {config.costPerMinute.nonHd}
+                      </p>
+                      <p className="text-[10px] text-[var(--cotton)]/40">
+                        per min &middot; 720p
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[10px] text-[var(--cotton)]/25">
+                    {config.costPerMinute.note}
                   </p>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { AppSettings } from '../lib/types'
-import { runProvisioning, runConvexProvisioning, type ProvisioningStep, type StepStatus } from '../lib/provisioning'
+import { runProvisioning, runConvexProvisioning, runSupabaseProvisioning, type ProvisioningStep, type StepStatus } from '../lib/provisioning'
 import appIcon from '../assets/icon-64.png'
 
 interface Props {
@@ -44,9 +44,15 @@ const CONVEX_STEPS: ProvisioningStep[] = [
   { id: 'deploy-functions', label: 'Deploying backend functions...', status: 'pending' },
 ]
 
+const SUPABASE_STEPS: ProvisioningStep[] = [
+  { id: 'verify-access', label: 'Verifying database access...', status: 'pending' },
+  { id: 'verify-storage', label: 'Verifying file storage...', status: 'pending' },
+  { id: 'deploy-functions', label: 'Deploying backend (DB + Storage + Edge Function)...', status: 'pending' },
+]
+
 export default function Provisioning({ settings, onComplete, onDisconnect }: Props) {
   const provider = settings.provider || 'firebase'
-  const initialSteps = provider === 'convex' ? CONVEX_STEPS : FIREBASE_STEPS
+  const initialSteps = provider === 'supabase' ? SUPABASE_STEPS : provider === 'convex' ? CONVEX_STEPS : FIREBASE_STEPS
   const [steps, setSteps] = useState<ProvisioningStep[]>(initialSteps)
   const [finished, setFinished] = useState(false)
   const [hasError, setHasError] = useState(false)
@@ -58,7 +64,7 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
     setExpandedError(null)
     setSteps(initialSteps.map((s) => ({ ...s })))
 
-    const runFn = provider === 'convex' ? runConvexProvisioning : runProvisioning
+    const runFn = provider === 'supabase' ? runSupabaseProvisioning : provider === 'convex' ? runConvexProvisioning : runProvisioning
     const ok = await runFn(settings, (updatedSteps) => {
       setSteps(updatedSteps)
     })
@@ -75,8 +81,8 @@ export default function Provisioning({ settings, onComplete, onDisconnect }: Pro
   }, [])
 
   const isInProgress = !finished && !hasError
-  const heading = provider === 'convex' ? 'Setting up Convex' : 'Setting up your project'
-  const subtitle = provider === 'convex' ? 'Verifying Convex services...' : 'Verifying Firebase services...'
+  const heading = provider === 'supabase' ? 'Setting up Supabase' : provider === 'convex' ? 'Setting up Convex' : 'Setting up your project'
+  const subtitle = provider === 'supabase' ? 'Verifying Supabase services...' : provider === 'convex' ? 'Verifying Convex services...' : 'Verifying Firebase services...'
 
   return (
     <div

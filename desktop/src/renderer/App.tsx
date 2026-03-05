@@ -9,6 +9,9 @@ function isConfigured(s: AppSettings): boolean {
   if (provider === 'convex') {
     return !!(s.convexDeployKey && s.convexDeploymentUrl)
   }
+  if (provider === 'supabase') {
+    return !!(s.supabaseProjectUrl && s.supabaseServiceRoleKey)
+  }
   // Firebase (default for backwards compat)
   return !!(s.firebaseProjectId && s.serviceAccountJson)
 }

@@ -21,6 +21,10 @@ export default function SetupWizard({ onConnect }: Props) {
   // Convex state
   const [convexDeployKey, setConvexDeployKey] = useState('')
 
+  // Supabase state
+  const [supabaseProjectUrl, setSupabaseProjectUrl] = useState('')
+  const [supabaseAccessToken, setSupabaseAccessToken] = useState('')
+
   // Shared state
   const [error, setError] = useState<string | null>(null)
   const [connecting, setConnecting] = useState(false)
@@ -159,11 +163,70 @@ export default function SetupWizard({ onConnect }: Props) {
     }
   }
 
+  // --- Supabase handlers ---
+
+  async function handleSupabaseConnect() {
+    setError(null)
+    setConnecting(true)
+
+    const url = supabaseProjectUrl.trim()
+    const token = supabaseAccessToken.trim()
+    if (!url || !token) {
+      setError('Please fill in both fields.')
+      setConnecting(false)
+      return
+    }
+
+    if (!/^https?:\/\/[^.]+\.supabase\.co\/?$/.test(url)) {
+      setError('Invalid Project URL. Expected format: https://<project-ref>.supabase.co')
+      setConnecting(false)
+      return
+    }
+
+    try {
+      await window.api.saveSettings({ provider: 'supabase' })
+
+      const result = await Promise.race([
+        window.api.validateConnection(JSON.stringify({ projectUrl: url, accessToken: token })),
+        new Promise<{ ok: false; error: string }>((_, reject) =>
+          setTimeout(() => reject(new Error('Connection timed out. Check your credentials and try again.')), 15000),
+        ),
+      ]) as { ok: boolean; projectRef?: string; serviceRoleKey?: string; anonKey?: string; error?: string }
+
+      if (!result.ok) {
+        await window.api.saveSettings({ provider: undefined })
+        setError(result.error ?? 'Connection failed')
+        setConnecting(false)
+        return
+      }
+
+      const settings: AppSettings = {
+        provider: 'supabase',
+        supabaseProjectUrl: url.replace(/\/+$/, ''),
+        supabaseProjectRef: result.projectRef,
+        supabaseAccessToken: token,
+        supabaseServiceRoleKey: result.serviceRoleKey,
+        supabaseAnonKey: result.anonKey,
+        isProvisioned: false,
+      }
+
+      await window.api.saveSettings(settings)
+      setConnecting(false)
+      onConnect(settings)
+    } catch (e) {
+      await window.api.saveSettings({ provider: undefined }).catch(() => {})
+      setError(e instanceof Error ? e.message : 'Connection failed. Please try again.')
+      setConnecting(false)
+    }
+  }
+
   function handleBackToProviderSelect() {
     setProvider(null)
     setError(null)
     setConnecting(false)
     setConvexDeployKey('')
+    setSupabaseProjectUrl('')
+    setSupabaseAccessToken('')
     setServiceAccountJson('')
     setFileName(null)
     setProjectId(null)
@@ -191,6 +254,36 @@ export default function SetupWizard({ onConnect }: Props) {
             <p className="text-zinc-400 text-sm mb-8">Choose your backend provider</p>
             <div className="w-full max-w-md space-y-3">
               <button
+                onClick={() => setProvider('supabase')}
+                className="w-full p-4 rounded-lg border border-zinc-700 hover:border-[var(--emerald)]/50 bg-zinc-800/50 hover:bg-zinc-800 transition-all text-left group"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-[var(--cotton)]">Supabase</p>
+                    <p className="text-xs text-zinc-400 mt-0.5">1 GB storage, 2 GB egress free</p>
+                  </div>
+                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--emerald)]/10 text-[var(--emerald)]">
+                    Developer friendly
+                  </span>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setProvider('convex')}
+                className="w-full p-4 rounded-lg border border-zinc-700 hover:border-[var(--crimson)]/50 bg-zinc-800/50 hover:bg-zinc-800 transition-all text-left group"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-[var(--cotton)]">Convex</p>
+                    <p className="text-xs text-zinc-400 mt-0.5">1 GB storage, 1 GB egress free</p>
+                  </div>
+                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--emerald)]/10 text-[var(--emerald)]">
+                    Developer friendly
+                  </span>
+                </div>
+              </button>
+
+              <button
                 onClick={() => setProvider('firebase')}
                 className="w-full p-4 rounded-lg border border-zinc-700 hover:border-[var(--mustard)]/50 bg-zinc-800/50 hover:bg-zinc-800 transition-all text-left group"
               >
@@ -200,18 +293,8 @@ export default function SetupWizard({ onConnect }: Props) {
                     <p className="text-xs text-zinc-400 mt-0.5">5 GB storage, 100 GB egress free</p>
                   </div>
                   <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-[var(--mustard)]/10 text-[var(--mustard)]">
-                    Recommended
+                    Cost effective
                   </span>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setProvider('convex')}
-                className="w-full p-4 rounded-lg border border-zinc-700 hover:border-[var(--crimson)]/50 bg-zinc-800/50 hover:bg-zinc-800 transition-all text-left group"
-              >
-                <div>
-                  <p className="text-sm font-medium text-[var(--cotton)]">Convex</p>
-                  <p className="text-xs text-zinc-400 mt-0.5">1 GB storage, 1 GB egress free</p>
                 </div>
               </button>
             </div>
@@ -457,6 +540,89 @@ export default function SetupWizard({ onConnect }: Props) {
                 data-testid="connect-button"
                 onClick={handleConvexConnect}
                 disabled={connecting || !convexDeployKey.trim()}
+                className="w-full py-2 px-4 bg-[var(--crimson)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-medium transition-all"
+              >
+                {connecting ? 'Connecting...' : 'Continue'}
+              </button>
+
+              <button
+                onClick={handleBackToProviderSelect}
+                disabled={connecting}
+                className="w-full py-2 px-4 text-zinc-500 hover:text-zinc-300 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                ← Change provider
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Supabase flow */}
+        {provider === 'supabase' && (
+          <>
+            <p className="text-zinc-400 text-sm mb-8">Connect your Supabase project</p>
+            <div className="w-full max-w-md space-y-6">
+              <div className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--emerald)]/15 text-[var(--emerald)] text-xs font-bold flex items-center justify-center mt-0.5">
+                  1
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-[var(--cotton)]">Create a Supabase project</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">Sign up and create a new project at supabase.com</p>
+                  <button
+                    onClick={() => window.open('https://supabase.com/dashboard')}
+                    className="text-xs text-[var(--mustard)] hover:text-[var(--mustard)]/80 transition-colors mt-2"
+                  >
+                    Open Supabase Dashboard →
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--emerald)]/15 text-[var(--emerald)] text-xs font-bold flex items-center justify-center mt-0.5">
+                  2
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-[var(--cotton)]">Generate an Access Token</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">Account → Access Tokens → Generate New Token</p>
+                  <button
+                    onClick={() => window.open('https://supabase.com/dashboard/account/tokens')}
+                    className="text-xs text-[var(--mustard)] hover:text-[var(--mustard)]/80 transition-colors mt-2"
+                  >
+                    Go to Access Tokens →
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-zinc-400 mb-1.5">Project URL</label>
+                <input
+                  type="text"
+                  value={supabaseProjectUrl}
+                  onChange={(e) => { setSupabaseProjectUrl(e.target.value); setError(null) }}
+                  placeholder="https://abcdefgh.supabase.co"
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-[var(--cotton)] placeholder-zinc-600 focus:outline-none focus:border-[var(--emerald)]/50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-zinc-400 mb-1.5">Access Token</label>
+                <input
+                  type="password"
+                  value={supabaseAccessToken}
+                  onChange={(e) => { setSupabaseAccessToken(e.target.value); setError(null) }}
+                  placeholder="sbp_..."
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-[var(--cotton)] placeholder-zinc-600 focus:outline-none focus:border-[var(--emerald)]/50"
+                />
+              </div>
+
+              {error && (
+                <p data-testid="error-message" className="text-red-400 text-sm">{error}</p>
+              )}
+
+              <button
+                data-testid="connect-button"
+                onClick={handleSupabaseConnect}
+                disabled={connecting || !supabaseProjectUrl.trim() || !supabaseAccessToken.trim()}
                 className="w-full py-2 px-4 bg-[var(--crimson)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-medium transition-all"
               >
                 {connecting ? 'Connecting...' : 'Continue'}

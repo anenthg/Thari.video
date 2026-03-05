@@ -15,6 +15,9 @@ function apiBaseUrl(provider: string, projectId: string): string {
   if (provider === "c") {
     return `https://${projectId}.convex.site`;
   }
+  if (provider === "s") {
+    return `https://${projectId}.supabase.co/functions/v1/openloom`;
+  }
   // Firebase (provider === "f")
   return `https://us-central1-${projectId}.cloudfunctions.net/openloom`;
 }
@@ -25,7 +28,7 @@ export async function fetchVideoMeta(
   provider = "f",
 ): Promise<VideoMeta> {
   let url: string;
-  if (provider === "c") {
+  if (provider === "c" || provider === "s") {
     url = `${apiBaseUrl(provider, projectId)}/v?code=${encodeURIComponent(code)}`;
   } else {
     url = `${apiBaseUrl(provider, projectId)}/v/${code}`;
@@ -43,7 +46,7 @@ export async function incrementView(
   code: string,
   provider = "f",
 ): Promise<void> {
-  if (provider === "c") {
+  if (provider === "c" || provider === "s") {
     fetch(`${apiBaseUrl(provider, projectId)}/view`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -62,7 +65,7 @@ export async function fetchReactions(
   provider = "f",
 ): Promise<Reaction[]> {
   let url: string;
-  if (provider === "c") {
+  if (provider === "c" || provider === "s") {
     url = `${apiBaseUrl(provider, projectId)}/reactions?code=${encodeURIComponent(code)}`;
   } else {
     url = `${apiBaseUrl(provider, projectId)}/v/${code}/reactions`;
@@ -80,7 +83,7 @@ export async function addReaction(
   timestamp: number,
   provider = "f",
 ): Promise<void> {
-  if (provider === "c") {
+  if (provider === "c" || provider === "s") {
     fetch(`${apiBaseUrl(provider, projectId)}/reactions/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

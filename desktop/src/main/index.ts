@@ -25,6 +25,18 @@ import {
   convexGetFileUrl,
 } from './convex-backend'
 import { deployConvexFunctions, CONVEX_FUNCTIONS_VERSION } from './deploy-convex-functions'
+import {
+  initSupabase,
+  validateSupabaseConnection,
+  supabaseInsert,
+  supabaseQuery,
+  supabaseQueryByField,
+  supabaseDelete,
+  supabaseUpload,
+  supabaseDeleteFile,
+  supabaseGetFileUrl,
+} from './supabase-backend'
+import { deploySupabaseFunctions, SUPABASE_FUNCTIONS_VERSION } from './deploy-supabase-functions'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const admin = require('firebase-admin') as typeof import('firebase-admin')
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -617,6 +629,20 @@ ipcMain.handle('validate-connection', async (_event, credential: string) => {
     }
     return result
   }
+  if (provider === 'supabase') {
+    const { projectUrl, accessToken } = JSON.parse(credential) as { projectUrl: string; accessToken: string }
+    const result = await validateSupabaseConnection(projectUrl, accessToken)
+    if (result.ok && result.serviceRoleKey) {
+      initSupabase(projectUrl, result.serviceRoleKey)
+    }
+    return {
+      ok: result.ok,
+      projectRef: result.projectRef,
+      serviceRoleKey: result.serviceRoleKey,
+      anonKey: result.anonKey,
+      error: result.error,
+    }
+  }
   // Firebase path — NOTE: The SetupWizard Firebase flow calls 'validate-firebase'
   // directly (which has full Datastore Mode handling and bucket detection).
   // This fallback exists for completeness but should not be the primary
@@ -638,6 +664,7 @@ ipcMain.handle(
   'db-insert',
   async (_event, collection: string, docId: string, data: Record<string, unknown>) => {
     if (getProvider() === 'convex') return convexInsert(collection, docId, data)
+    if (getProvider() === 'supabase') return supabaseInsert(collection, docId, data)
     // Firebase
     try {
       const db = getFirestoreDB()
@@ -654,6 +681,7 @@ ipcMain.handle(
   'db-query',
   async (_event, collection: string, orderBy: string, direction: string) => {
     if (getProvider() === 'convex') return convexQueryFn(collection, orderBy, direction)
+    if (getProvider() === 'supabase') return supabaseQuery(collection, orderBy, direction)
     // Firebase
     try {
       const db = getFirestoreDB()
@@ -672,6 +700,7 @@ ipcMain.handle(
   'db-query-by-field',
   async (_event, collection: string, field: string, value: string) => {
     if (getProvider() === 'convex') return convexQueryByField(collection, field, value)
+    if (getProvider() === 'supabase') return supabaseQueryByField(collection, field, value)
     // Firebase
     try {
       const db = getFirestoreDB()
@@ -689,6 +718,7 @@ ipcMain.handle(
   'db-delete',
   async (_event, collection: string, docId: string) => {
     if (getProvider() === 'convex') return convexDelete(collection, docId)
+    if (getProvider() === 'supabase') return supabaseDelete(collection, docId)
     // Firebase
     try {
       const db = getFirestoreDB()
@@ -705,6 +735,7 @@ ipcMain.handle(
   'file-upload',
   async (_event, remotePath: string, fileData: ArrayBuffer, contentType: string) => {
     if (getProvider() === 'convex') return convexUpload(remotePath, fileData, contentType)
+    if (getProvider() === 'supabase') return supabaseUpload(remotePath, fileData, contentType)
     // Firebase — use shared upload with bucket fallback
     return firebaseUploadFile(remotePath, Buffer.from(fileData), contentType)
   },
@@ -713,6 +744,7 @@ ipcMain.handle(
 // File Delete
 ipcMain.handle('file-delete', async (_event, remotePath: string) => {
   if (getProvider() === 'convex') return convexDeleteFile(remotePath)
+  if (getProvider() === 'supabase') return supabaseDeleteFile(remotePath)
   // Firebase
   try {
     const bucket = getFirebaseApp().storage().bucket()
@@ -726,6 +758,7 @@ ipcMain.handle('file-delete', async (_event, remotePath: string) => {
 // File Get Public URL
 ipcMain.handle('file-get-public-url', async (_event, remotePath: string) => {
   if (getProvider() === 'convex') return convexGetFileUrl(remotePath)
+  if (getProvider() === 'supabase') return supabaseGetFileUrl(remotePath)
   // Firebase
   try {
     const bucket = getFirebaseApp().storage().bucket()
@@ -753,6 +786,37 @@ ipcMain.handle('deploy-backend-functions', async (event) => {
 
     if (result.ok) {
       settings.convexFunctionsVersion = CONVEX_FUNCTIONS_VERSION
+      saveSettings(settings)
+    }
+
+    return result
+  }
+
+  if (getProvider() === 'supabase') {
+    const projectRef = settings.supabaseProjectRef as string | undefined
+    const accessToken = settings.supabaseAccessToken as string | undefined
+    const projectUrl = settings.supabaseProjectUrl as string | undefined
+    const serviceRoleKey = settings.supabaseServiceRoleKey as string | undefined
+
+    if (!projectRef || !accessToken || !projectUrl || !serviceRoleKey) {
+      return { ok: false, error: 'Supabase credentials not configured' }
+    }
+
+    const currentVersion = settings.supabaseFunctionsVersion as string | undefined
+    if (currentVersion === SUPABASE_FUNCTIONS_VERSION) {
+      return { ok: true, skipped: true }
+    }
+
+    const result = await deploySupabaseFunctions(
+      projectRef,
+      accessToken,
+      projectUrl,
+      serviceRoleKey,
+      (stage) => { event.sender.send('deploy-progress', stage) },
+    )
+
+    if (result.ok) {
+      settings.supabaseFunctionsVersion = SUPABASE_FUNCTIONS_VERSION
       saveSettings(settings)
     }
 
@@ -810,6 +874,13 @@ app.whenReady().then(async () => {
   const convexDeploymentUrl = settings.convexDeploymentUrl as string | undefined
   if (convexDeployKey && convexDeploymentUrl) {
     initConvex(convexDeployKey, convexDeploymentUrl)
+  }
+
+  // Re-initialize Supabase if credentials exist
+  const supabaseProjectUrl = settings.supabaseProjectUrl as string | undefined
+  const supabaseServiceRoleKey = settings.supabaseServiceRoleKey as string | undefined
+  if (supabaseProjectUrl && supabaseServiceRoleKey) {
+    initSupabase(supabaseProjectUrl, supabaseServiceRoleKey)
   }
 
   // Re-initialize Firebase if service account exists in settings

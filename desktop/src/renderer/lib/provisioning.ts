@@ -78,6 +78,35 @@ async function verifyConvexStorage(): Promise<StepResult> {
   return { ok: true }
 }
 
+// --- Supabase verification ---
+
+async function verifySupabaseAccess(): Promise<StepResult> {
+  try {
+    const result = await window.api.dbQuery('videos', 'created_at', 'desc')
+    if (result.ok) return { ok: true }
+    const err = result.error?.toLowerCase() || ''
+    // Table not found is expected before database setup
+    if (err.includes('relation') || err.includes('does not exist') || err.includes('404') || err.includes('42p01')) {
+      return { ok: true }
+    }
+    if (err.includes('401') || err.includes('403') || err.includes('authentication') || err.includes('jwt')) {
+      return { ok: false, error: 'Supabase authentication failed. Check your credentials.' }
+    }
+    return { ok: false, error: result.error }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    if (msg.includes('not initialized')) {
+      return { ok: false, error: 'Supabase client not initialized. Try disconnecting and reconnecting.' }
+    }
+    return { ok: false, error: `Supabase verification failed: ${msg}` }
+  }
+}
+
+async function verifySupabaseStorage(): Promise<StepResult> {
+  // Storage bucket is created during deployment — just verify connection
+  return { ok: true }
+}
+
 const DEPLOY_STEP_IDS = [
   'deploy-enable-apis',
   'deploy-check-access',
@@ -245,6 +274,77 @@ export async function runConvexProvisioning(
   updateStep('verify-storage', { status: 'done' })
 
   // Step 3: Deploy backend functions
+  updateStep('deploy-functions', { status: 'running' })
+
+  window.api.onDeployProgress((stage: string) => {
+    if (stage === 'deploy-functions') {
+      updateStep('deploy-functions', { status: 'waiting' })
+    }
+  })
+
+  try {
+    const result = await window.api.deployBackendFunctions()
+    window.api.offDeployProgress()
+
+    if (result.ok) {
+      updateStep('deploy-functions', { status: 'done' })
+      return true
+    } else {
+      updateStep('deploy-functions', {
+        status: 'error',
+        error: result.error,
+      })
+      return false
+    }
+  } catch (e) {
+    window.api.offDeployProgress()
+    updateStep('deploy-functions', {
+      status: 'error',
+      error: `Deployment failed: ${e instanceof Error ? e.message : String(e)}`,
+    })
+    return false
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Supabase provisioning
+// ---------------------------------------------------------------------------
+
+export async function runSupabaseProvisioning(
+  _settings: AppSettings,
+  onUpdate: StepUpdateCallback,
+): Promise<boolean> {
+  const steps: ProvisioningStep[] = [
+    { id: 'verify-access', label: 'Verifying database access...', status: 'pending' },
+    { id: 'verify-storage', label: 'Verifying file storage...', status: 'pending' },
+    { id: 'deploy-functions', label: 'Deploying backend (DB + Storage + Edge Function)...', status: 'pending' },
+  ]
+
+  function updateStep(id: string, update: Partial<ProvisioningStep>) {
+    const step = steps.find((s) => s.id === id)
+    if (step) Object.assign(step, update)
+    onUpdate([...steps])
+  }
+
+  // Step 1: Verify database access
+  updateStep('verify-access', { status: 'running' })
+  const accessResult = await verifySupabaseAccess()
+  if (!accessResult.ok) {
+    updateStep('verify-access', { status: 'error', error: accessResult.error })
+    return false
+  }
+  updateStep('verify-access', { status: 'done' })
+
+  // Step 2: Verify storage
+  updateStep('verify-storage', { status: 'running' })
+  const storageResult = await verifySupabaseStorage()
+  if (!storageResult.ok) {
+    updateStep('verify-storage', { status: 'error', error: storageResult.error })
+    return false
+  }
+  updateStep('verify-storage', { status: 'done' })
+
+  // Step 3: Deploy backend functions (DB setup + storage setup + Edge Function)
   updateStep('deploy-functions', { status: 'running' })
 
   window.api.onDeployProgress((stage: string) => {

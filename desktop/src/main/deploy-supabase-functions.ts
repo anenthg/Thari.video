@@ -1,0 +1,483 @@
+import { execFile } from 'child_process'
+import { mkdirSync, writeFileSync, rmSync, existsSync } from 'fs'
+import { join } from 'path'
+import { tmpdir } from 'os'
+import { net } from 'electron'
+
+export const SUPABASE_FUNCTIONS_VERSION = '1.0.0'
+
+export type SupabaseDeployStage =
+  | 'verify-access'
+  | 'verify-storage'
+  | 'deploy-functions'
+
+// ---------------------------------------------------------------------------
+// SQL for table setup
+// ---------------------------------------------------------------------------
+
+const SETUP_SQL = `
+-- Create tables if they don't exist yet
+CREATE TABLE IF NOT EXISTS videos (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  short_code text UNIQUE NOT NULL,
+  title text NOT NULL,
+  description text,
+  storage_url text NOT NULL,
+  view_count integer DEFAULT 0,
+  duration_ms integer,
+  capture_mode text NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS reactions (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  video_short_code text NOT NULL,
+  emoji text NOT NULL,
+  timestamp real NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Migrate videos table from older schemas
+DO $$ BEGIN
+  -- short_code (was missing in early schemas)
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='videos' AND column_name='short_code') THEN
+    ALTER TABLE videos ADD COLUMN short_code text UNIQUE;
+    UPDATE videos SET short_code = substr(gen_random_uuid()::text, 1, 8) WHERE short_code IS NULL;
+    ALTER TABLE videos ALTER COLUMN short_code SET NOT NULL;
+  END IF;
+  -- storage_url (older schema used storage_path)
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='videos' AND column_name='storage_url') THEN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='videos' AND column_name='storage_path') THEN
+      ALTER TABLE videos RENAME COLUMN storage_path TO storage_url;
+    ELSE
+      ALTER TABLE videos ADD COLUMN storage_url text NOT NULL DEFAULT '';
+    END IF;
+  END IF;
+  -- duration_ms
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='videos' AND column_name='duration_ms') THEN
+    ALTER TABLE videos ADD COLUMN duration_ms integer;
+  END IF;
+  -- view_count
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='videos' AND column_name='view_count') THEN
+    ALTER TABLE videos ADD COLUMN view_count integer DEFAULT 0;
+  END IF;
+  -- capture_mode
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='videos' AND column_name='capture_mode') THEN
+    ALTER TABLE videos ADD COLUMN capture_mode text NOT NULL DEFAULT 'screen';
+  END IF;
+END $$;
+
+-- Migrate reactions table from older schemas
+DO $$ BEGIN
+  -- video_short_code (older schema used video_id uuid)
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='reactions' AND column_name='video_short_code') THEN
+    ALTER TABLE reactions ADD COLUMN video_short_code text NOT NULL DEFAULT '';
+    -- Backfill from video_id if the old column exists
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='reactions' AND column_name='video_id') THEN
+      UPDATE reactions r SET video_short_code = v.short_code
+        FROM videos v WHERE v.id = r.video_id;
+    END IF;
+  END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_videos_short_code ON videos(short_code);
+CREATE INDEX IF NOT EXISTS idx_videos_created_at ON videos(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reactions_video ON reactions(video_short_code);
+
+-- RLS policies
+ALTER TABLE videos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reactions ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'videos' AND policyname = 'Allow service role full access on videos') THEN
+    CREATE POLICY "Allow service role full access on videos" ON videos FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'reactions' AND policyname = 'Allow service role full access on reactions') THEN
+    CREATE POLICY "Allow service role full access on reactions" ON reactions FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+END $$;
+`.trim()
+
+// ---------------------------------------------------------------------------
+// Edge Function source
+// ---------------------------------------------------------------------------
+
+const EDGE_FUNCTION_SOURCE = `
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders: Record<string, string> = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+
+  const url = new URL(req.url);
+  const segments = url.pathname.split("/");
+  const fnIdx = segments.indexOf("openloom");
+  const subPath = "/" + segments.slice(fnIdx + 1).join("/");
+
+  try {
+    // GET /v?code=xxx — video metadata
+    if (subPath === "/v" && req.method === "GET") {
+      const code = url.searchParams.get("code");
+      if (!code) {
+        return new Response(JSON.stringify({ error: "code is required" }), {
+          status: 400,
+          headers: corsHeaders,
+        });
+      }
+      const { data, error } = await supabase
+        .from("videos")
+        .select("*")
+        .eq("short_code", code)
+        .single();
+      if (error || !data) {
+        return new Response(JSON.stringify({ error: "Video not found" }), {
+          status: 404,
+          headers: corsHeaders,
+        });
+      }
+      return new Response(JSON.stringify(data), { headers: corsHeaders });
+    }
+
+    // POST /view — increment view count
+    if (subPath === "/view" && req.method === "POST") {
+      const body = await req.json();
+      const code = body.code;
+      if (!code) {
+        return new Response(JSON.stringify({ error: "code is required" }), {
+          status: 400,
+          headers: corsHeaders,
+        });
+      }
+      await supabase.rpc("increment_view_count", { p_short_code: code });
+      return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+    }
+
+    // GET /reactions?code=xxx — list reactions
+    if (subPath === "/reactions" && req.method === "GET") {
+      const code = url.searchParams.get("code");
+      if (!code) {
+        return new Response(JSON.stringify({ error: "code is required" }), {
+          status: 400,
+          headers: corsHeaders,
+        });
+      }
+      const { data } = await supabase
+        .from("reactions")
+        .select("*")
+        .eq("video_short_code", code);
+      return new Response(JSON.stringify(data || []), { headers: corsHeaders });
+    }
+
+    // POST /reactions/add — add reaction
+    if (subPath === "/reactions/add" && req.method === "POST") {
+      const body = await req.json();
+      const { code, emoji, timestamp } = body;
+      if (!code || !emoji || typeof timestamp !== "number") {
+        return new Response(
+          JSON.stringify({ error: "code, emoji, and timestamp are required" }),
+          { status: 400, headers: corsHeaders }
+        );
+      }
+      await supabase.from("reactions").insert({
+        video_short_code: code,
+        emoji,
+        timestamp,
+        created_at: new Date().toISOString(),
+      });
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 201,
+        headers: corsHeaders,
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Not found" }), {
+      status: 404,
+      headers: corsHeaders,
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: String(e) }), {
+      status: 500,
+      headers: corsHeaders,
+    });
+  }
+});
+`.trim()
+
+// Also need an RPC for incrementing view count
+const INCREMENT_VIEW_COUNT_SQL = `
+CREATE OR REPLACE FUNCTION increment_view_count(p_short_code text)
+RETURNS void AS $$
+BEGIN
+  UPDATE videos SET view_count = view_count + 1 WHERE short_code = p_short_code;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+`.trim()
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function log(msg: string, data?: unknown): void {
+  const ts = new Date().toISOString()
+  if (data !== undefined) {
+    console.log(`[deploy-supabase ${ts}] ${msg}`, data)
+  } else {
+    console.log(`[deploy-supabase ${ts}] ${msg}`)
+  }
+}
+
+function findBin(name: string): string {
+  const candidates = [
+    `/usr/local/bin/${name}`,
+    `/opt/homebrew/bin/${name}`,
+    `${process.env.HOME}/.nvm/current/bin/${name}`,
+    name,
+  ]
+  for (const c of candidates) {
+    try {
+      if (c === name) return c
+      if (existsSync(c)) return c
+    } catch {
+      // continue
+    }
+  }
+  return name
+}
+
+function runCommand(
+  cmd: string,
+  args: string[],
+  cwd: string,
+  env?: Record<string, string>,
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const proc = execFile(
+      cmd,
+      args,
+      {
+        cwd,
+        env: { ...process.env, ...env },
+        timeout: 300_000,
+        maxBuffer: 10 * 1024 * 1024,
+      },
+      (error, stdout, stderr) => {
+        if (error) {
+          reject(new Error(`${cmd} ${args.join(' ')} failed: ${stderr || error.message}`))
+        } else {
+          resolve(stdout)
+        }
+      },
+    )
+    proc.stdout?.on('data', (data) => log(`[stdout] ${data}`))
+    proc.stderr?.on('data', (data) => log(`[stderr] ${data}`))
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Database setup via Management API
+// ---------------------------------------------------------------------------
+
+export async function setupSupabaseDatabase(
+  projectRef: string,
+  accessToken: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    log('Setting up database tables...')
+
+    // Run main schema SQL
+    const schemaRes = await net.fetch(
+      `https://api.supabase.com/v1/projects/${projectRef}/database/query`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: SETUP_SQL }),
+      },
+    )
+
+    if (!schemaRes.ok) {
+      const text = await schemaRes.text()
+      throw new Error(`Database setup failed: ${schemaRes.status} ${text}`)
+    }
+
+    // Run RPC function creation
+    const rpcRes = await net.fetch(
+      `https://api.supabase.com/v1/projects/${projectRef}/database/query`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: INCREMENT_VIEW_COUNT_SQL }),
+      },
+    )
+
+    if (!rpcRes.ok) {
+      const text = await rpcRes.text()
+      throw new Error(`RPC function setup failed: ${rpcRes.status} ${text}`)
+    }
+
+    log('Database tables created successfully')
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: `Database setup failed: ${e instanceof Error ? e.message : String(e)}` }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Storage setup
+// ---------------------------------------------------------------------------
+
+export async function setupSupabaseStorage(
+  projectUrl: string,
+  serviceRoleKey: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    log('Setting up storage bucket...')
+    const url = projectUrl.replace(/\/+$/, '')
+
+    // Create 'videos' bucket with public read
+    const res = await net.fetch(`${url}/storage/v1/bucket`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${serviceRoleKey}`,
+        apikey: serviceRoleKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: 'videos',
+        name: 'videos',
+        public: true,
+      }),
+    })
+
+    if (!res.ok) {
+      const text = await res.text()
+      // 409 = bucket already exists — ensure it's public
+      if (res.status === 409 || text.includes('already exists')) {
+        log('Storage bucket already exists, ensuring it is public...')
+        const updateRes = await net.fetch(`${url}/storage/v1/bucket/videos`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${serviceRoleKey}`,
+            apikey: serviceRoleKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ public: true }),
+        })
+        if (!updateRes.ok) {
+          const updateText = await updateRes.text()
+          log(`Warning: could not update bucket to public: ${updateRes.status} ${updateText}`)
+        }
+        return { ok: true }
+      }
+      throw new Error(`Storage bucket creation failed: ${res.status} ${text}`)
+    }
+
+    log('Storage bucket created successfully')
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: `Storage setup failed: ${e instanceof Error ? e.message : String(e)}` }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Edge Function deployment
+// ---------------------------------------------------------------------------
+
+export async function deploySupabaseEdgeFunction(
+  projectRef: string,
+  accessToken: string,
+  onProgress?: (stage: SupabaseDeployStage) => void,
+): Promise<{ ok: boolean; error?: string }> {
+  const tmpDir = join(tmpdir(), `openloom-supabase-${Date.now()}`)
+
+  try {
+    log('=== Starting Supabase Edge Function deployment ===')
+    onProgress?.('deploy-functions')
+
+    // Create temp directory structure: supabase/functions/openloom/
+    const functionsDir = join(tmpDir, 'supabase', 'functions', 'openloom')
+    mkdirSync(functionsDir, { recursive: true })
+
+    // Write the Edge Function source
+    writeFileSync(join(functionsDir, 'index.ts'), EDGE_FUNCTION_SOURCE)
+
+    log(`Files written to ${tmpDir}`)
+
+    // Deploy via Supabase CLI
+    log('Running npx supabase functions deploy...')
+    const deployResult = await runCommand(
+      findBin('npx'),
+      [
+        '--yes',
+        'supabase',
+        'functions',
+        'deploy',
+        'openloom',
+        '--project-ref',
+        projectRef,
+        '--no-verify-jwt',
+      ],
+      tmpDir,
+      { SUPABASE_ACCESS_TOKEN: accessToken },
+    )
+    log('Supabase deploy output:', deployResult)
+
+    log('=== Supabase Edge Function deployment finished ===')
+    return { ok: true }
+  } catch (e) {
+    const errMsg = e instanceof Error ? e.message : String(e)
+    log(`=== Supabase Edge Function deployment FAILED: ${errMsg} ===`)
+    return { ok: false, error: `Supabase deployment failed: ${errMsg}` }
+  } finally {
+    try {
+      rmSync(tmpDir, { recursive: true, force: true })
+      log(`Cleaned up ${tmpDir}`)
+    } catch {
+      // ignore cleanup errors
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Combined deployment
+// ---------------------------------------------------------------------------
+
+export async function deploySupabaseFunctions(
+  projectRef: string,
+  accessToken: string,
+  projectUrl: string,
+  serviceRoleKey: string,
+  onProgress?: (stage: SupabaseDeployStage) => void,
+): Promise<{ ok: boolean; error?: string }> {
+  // Step 1: Setup database
+  const dbResult = await setupSupabaseDatabase(projectRef, accessToken)
+  if (!dbResult.ok) return dbResult
+
+  // Step 2: Setup storage
+  const storageResult = await setupSupabaseStorage(projectUrl, serviceRoleKey)
+  if (!storageResult.ok) return storageResult
+
+  // Step 3: Deploy edge function
+  return deploySupabaseEdgeFunction(projectRef, accessToken, onProgress)
+}

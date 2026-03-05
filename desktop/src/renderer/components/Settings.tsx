@@ -21,7 +21,16 @@ export default function Settings({ settings, onDisconnect, onReprovision }: Prop
           <p className="text-white capitalize">{provider}</p>
         </div>
 
-        {provider === 'convex' ? (
+        {provider === 'supabase' ? (
+          <div>
+            <label className="block text-sm text-zinc-400 mb-1">
+              Supabase Project
+            </label>
+            <p data-testid="settings-project-id" className="text-white font-mono text-sm">
+              {settings.supabaseProjectRef}
+            </p>
+          </div>
+        ) : provider === 'convex' ? (
           <div>
             <label className="block text-sm text-zinc-400 mb-1">
               Convex Deployment

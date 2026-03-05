@@ -42,7 +42,7 @@ export async function deleteVideo(shortCode: string): Promise<void> {
   const settings = await window.api.getSettings()
   const provider = settings.provider || 'firebase'
 
-  if (provider === 'firebase') {
+  if (provider === 'firebase' || provider === 'supabase') {
     // Delete from storage first (try both extensions)
     await window.api.fileDelete(`videos/${shortCode}.webm`)
     await window.api.fileDelete(`videos/${shortCode}.mp4`)
@@ -88,6 +88,12 @@ export function getShareURL(settings: AppSettings, shortCode: string): string {
   if (provider === 'convex') {
     const deploymentName = settings.convexDeploymentName || ''
     const encoded = btoa(`c-${deploymentName}`).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    return `https://openloom.live/v/${encoded}/${shortCode}`
+  }
+
+  if (provider === 'supabase') {
+    const projectRef = settings.supabaseProjectRef || ''
+    const encoded = btoa(`s-${projectRef}`).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
     return `https://openloom.live/v/${encoded}/${shortCode}`
   }
 
