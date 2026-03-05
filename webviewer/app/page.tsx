@@ -154,10 +154,11 @@ export default function LandingPage() {
 
           {/* Install note */}
           <p className="mt-4 max-w-lg font-mono text-xs leading-relaxed text-[var(--cotton)]/30">
-            Not code-signed yet. If macOS says the app is damaged, run{" "}
+            Not code-signed yet. On macOS, if the app is flagged as damaged, run{" "}
             <code className="rounded bg-[var(--cotton)]/[0.08] px-1.5 py-0.5 text-[var(--cotton)]/50">
               xattr -cr /Applications/OpenLoom.app
             </code>
+            . On Windows, click &ldquo;More info&rdquo; &rarr; &ldquo;Run anyway&rdquo; on the SmartScreen prompt.
           </p>
 
         </div>
@@ -573,7 +574,7 @@ const STEPS = [
     color: "var(--crimson)",
     title: "Download & Configure",
     description:
-      "Download the OpenLoom desktop app for macOS, open it, and connect your backend provider. Choose Firebase, Convex, or Supabase \u2014 paste your credentials and you\u2019re ready to record.",
+      "Download the OpenLoom desktop app for macOS or Windows, open it, and connect your backend provider. Choose Firebase, Convex, or Supabase \u2014 paste your credentials and you\u2019re ready to record.",
   },
   {
     id: "setup",

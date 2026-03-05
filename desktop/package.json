@@ -11,7 +11,8 @@
     "preview": "electron-vite preview",
     "test:e2e": "npx playwright test",
     "postinstall": "electron-builder install-app-deps",
-    "release": "electron-vite build && electron-builder --mac --arm64 --x64"
+    "release": "electron-vite build && electron-builder --mac --arm64 --x64",
+    "release:win": "electron-vite build && electron-builder --win --x64"
   },
   "dependencies": {
     "convex": "^1.17.0",
@@ -48,6 +49,16 @@
         "NSCameraUsageDescription": "OpenLoom needs camera access to include a camera overlay in your recording.",
         "NSScreenCaptureUsageDescription": "OpenLoom needs screen recording access to capture your screen."
       }
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "resources/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "resources/icon.ico",
+      "uninstallerIcon": "resources/icon.ico"
     },
     "directories": {
       "output": "release"

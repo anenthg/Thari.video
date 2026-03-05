@@ -434,3 +434,17 @@ body {
 .reaction-marker:hover .reaction-tooltip {
   display: block;
 }
+
+/* ------------------------------------------------------------------ */
+/* Download dialog animations                                          */
+/* ------------------------------------------------------------------ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
