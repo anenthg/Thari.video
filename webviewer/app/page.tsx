@@ -27,10 +27,6 @@ function BackendInfraDropdown() {
       >
         <span className="block rounded-lg border border-[var(--cotton)]/10 bg-[var(--deep-black)] px-1 py-1 shadow-xl shadow-black/40 backdrop-blur-sm">
           {/* Terminal prompt hint */}
-          <span className="block px-3 pt-1.5 pb-1 font-mono text-[10px] uppercase tracking-widest text-[var(--cotton)]/25">
-            tab-complete
-          </span>
-
           {INFRA_PROVIDERS.map((p) => (
             <span
               key={p.name}
@@ -151,16 +147,6 @@ export default function LandingPage() {
               How it works
             </a>
           </div>
-
-          {/* Install note */}
-          <p className="mt-4 max-w-lg font-mono text-xs leading-relaxed text-[var(--cotton)]/30">
-            Not code-signed yet. On macOS, if the app is flagged as damaged, run{" "}
-            <code className="rounded bg-[var(--cotton)]/[0.08] px-1.5 py-0.5 text-[var(--cotton)]/50">
-              xattr -cr /Applications/OpenLoom.app
-            </code>
-            . On Windows, click &ldquo;More info&rdquo; &rarr; &ldquo;Run anyway&rdquo; on the SmartScreen prompt.
-          </p>
-
         </div>
 
         {/* Scroll indicator */}

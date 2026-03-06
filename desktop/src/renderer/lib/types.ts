@@ -31,6 +31,8 @@ export interface Video {
   duration_ms: number | null
   capture_mode: 'screen' | 'window' | 'tab'
   created_at: string
+  is_protected?: boolean
+  password_salt?: string
 }
 
 export interface VideoInsert {
@@ -40,6 +42,8 @@ export interface VideoInsert {
   storage_url: string
   duration_ms?: number | null
   capture_mode: 'screen' | 'window' | 'tab'
+  is_protected?: boolean
+  password_salt?: string
 }
 
 export interface DesktopSource {

@@ -29,6 +29,8 @@ export default defineSchema({
     duration_ms: v.optional(v.union(v.number(), v.null())),
     capture_mode: v.string(),
     created_at: v.string(),
+    is_protected: v.optional(v.boolean()),
+    password_salt: v.optional(v.string()),
   })
     .index("by_short_code", ["short_code"])
     .index("by_created_at", ["created_at"]),
@@ -78,6 +80,8 @@ export const insert = mutation({
     duration_ms: v.optional(v.union(v.number(), v.null())),
     capture_mode: v.string(),
     created_at: v.string(),
+    is_protected: v.optional(v.boolean()),
+    password_salt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("videos", args);

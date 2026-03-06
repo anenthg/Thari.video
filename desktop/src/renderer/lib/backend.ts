@@ -26,6 +26,11 @@ export async function insertVideo(video: VideoInsert, storageId?: string): Promi
     doc.storage_id = storageId
   }
 
+  if (video.is_protected) {
+    doc.is_protected = true
+    doc.password_salt = video.password_salt ?? null
+  }
+
   const result = await window.api.dbInsert('videos', video.short_code, doc)
   if (!result.ok) throw new Error(`Insert failed: ${result.error}`)
 

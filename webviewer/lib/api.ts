@@ -9,6 +9,8 @@ export interface VideoMeta {
   duration_ms: number | null;
   capture_mode: string;
   created_at: string;
+  is_protected?: boolean;
+  password_salt?: string;
 }
 
 function apiBaseUrl(provider: string, projectId: string): string {

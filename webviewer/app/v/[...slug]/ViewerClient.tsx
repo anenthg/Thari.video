@@ -243,7 +243,7 @@ function ReactionTimeline({
 // Main viewer page
 // ---------------------------------------------------------------------------
 
-type Phase = "loading" | "not_found" | "error" | "player";
+type Phase = "loading" | "not_found" | "error" | "password_gate" | "player";
 
 export default function VideoViewerPage() {
   const [phase, setPhase] = useState<Phase>("loading");
@@ -257,6 +257,9 @@ export default function VideoViewerPage() {
   const [playerReady, setPlayerReady] = useState(false);
   const [copied, setCopied] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [unlocking, setUnlocking] = useState(false);
 
   const lastReactionTimeRef = useRef(0);
   const floatingIdRef = useRef(0);
@@ -282,7 +285,7 @@ export default function VideoViewerPage() {
     )
       .then((meta) => {
         setVideoMeta(meta);
-        setPhase("player");
+        setPhase(meta.is_protected ? "password_gate" : "player");
       })
       .catch((err: Error) => {
         if (err.message === "not_found") {
@@ -429,6 +432,26 @@ export default function VideoViewerPage() {
     }
   }, []);
 
+  const handleUnlock = useCallback(async () => {
+    if (!videoMeta || !passwordInput) return;
+    setUnlocking(true);
+    setPasswordError("");
+    try {
+      const { decryptUrl } = await import("@/lib/crypto");
+      const decryptedUrl = await decryptUrl(
+        videoMeta.storage_url,
+        passwordInput,
+        videoMeta.password_salt!,
+      );
+      setVideoMeta({ ...videoMeta, storage_url: decryptedUrl });
+      setPhase("player");
+    } catch {
+      setPasswordError("Incorrect password");
+    } finally {
+      setUnlocking(false);
+    }
+  }, [videoMeta, passwordInput]);
+
   const handleCopyLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -500,7 +523,57 @@ export default function VideoViewerPage() {
     );
   }
 
-  // Password gate — reserved for future use when is_protected is supported
+  if (phase === "password_gate" && videoMeta) {
+    return (
+      <div className="flex min-h-[calc(100dvh-theme(spacing.14)-4px)] flex-col">
+        {stripe}
+        <main className="flex flex-1 items-center justify-center bg-white py-20">
+          <div className="w-full max-w-sm text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+              <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            </div>
+            <h1 className="text-xl font-semibold text-gray-900">
+              {videoMeta.title}
+            </h1>
+            <p className="mt-2 text-sm text-gray-500">
+              This video is password protected.
+            </p>
+            <form
+              className="mt-6"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleUnlock();
+              }}
+            >
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => {
+                  setPasswordInput(e.target.value);
+                  setPasswordError("");
+                }}
+                placeholder="Enter password"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[var(--crimson)] focus:outline-none focus:ring-1 focus:ring-[var(--crimson)]"
+                autoFocus
+              />
+              {passwordError && (
+                <p className="mt-2 text-sm text-[var(--crimson)]">{passwordError}</p>
+              )}
+              <button
+                type="submit"
+                disabled={!passwordInput || unlocking}
+                className="mt-3 w-full rounded-lg bg-[var(--warp-indigo)] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-md active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {unlocking ? "Unlocking..." : "Unlock Video"}
+              </button>
+            </form>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (!videoMeta) return null;
 

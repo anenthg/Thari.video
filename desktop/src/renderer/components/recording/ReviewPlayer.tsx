@@ -5,7 +5,7 @@ interface ReviewPlayerProps {
   blob: Blob
   duration: number
   onDiscard: () => void
-  onUpload: (title: string) => void
+  onUpload: (title: string, password?: string) => void
 }
 
 function formatTime(seconds: number): string {
@@ -25,6 +25,8 @@ export default function ReviewPlayer({
   onUpload,
 }: ReviewPlayerProps) {
   const [title, setTitle] = useState('')
+  const [passwordEnabled, setPasswordEnabled] = useState(false)
+  const [password, setPassword] = useState('')
   const videoRef = useRef<HTMLVideoElement>(null)
   const progressRef = useRef<HTMLDivElement>(null)
   const volumeRef = useRef<HTMLDivElement>(null)
@@ -287,6 +289,34 @@ export default function ReviewPlayer({
         required
       />
 
+      {/* Password protection */}
+      <div className="mb-4">
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={passwordEnabled}
+            onChange={(e) => {
+              setPasswordEnabled(e.target.checked)
+              if (!e.target.checked) setPassword('')
+            }}
+            className="w-4 h-4 accent-[var(--crimson)] rounded"
+          />
+          <svg className="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+          <span className="text-sm text-zinc-300">Password protect</span>
+        </label>
+        {passwordEnabled && (
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter password"
+            className="mt-2 w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[var(--crimson)]"
+          />
+        )}
+      </div>
+
       <div className="flex gap-3">
         <button
           onClick={onDiscard}
@@ -296,8 +326,8 @@ export default function ReviewPlayer({
           Discard
         </button>
         <button
-          onClick={() => onUpload(title)}
-          disabled={!title.trim()}
+          onClick={() => onUpload(title, passwordEnabled && password ? password : undefined)}
+          disabled={!title.trim() || (passwordEnabled && !password)}
           className="flex-1 px-4 py-2 bg-[var(--crimson)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(217,43,43,0.25)] active:scale-[0.97] text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100 disabled:hover:shadow-none"
         >
           <UploadIcon className="w-4 h-4" />

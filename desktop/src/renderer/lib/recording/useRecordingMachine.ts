@@ -36,7 +36,7 @@ export interface RecordingActions {
   selectMic: (id: string | null) => void
   stopRecording: () => void
   discard: () => void
-  upload: (title: string) => Promise<void>
+  upload: (title: string, password?: string) => Promise<void>
   setMicMuted: (muted: boolean) => void
   reset: () => void
 }
@@ -211,7 +211,7 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
   }, [])
 
   const upload = useCallback(
-    async (title: string) => {
+    async (title: string, password?: string) => {
       if (!recordedBlob) return
 
       setPhase('uploading')
@@ -238,12 +238,27 @@ export function useRecordingMachine(): RecordingState & RecordingActions {
           finalStorageUrl = `${settings.convexHttpActionsUrl}/video?code=${shortCode}`
         }
 
+        // Encrypt storage URL if password provided
+        let videoStorageUrl = finalStorageUrl
+        let isProtected: boolean | undefined
+        let passwordSalt: string | undefined
+
+        if (password) {
+          const { encryptUrl } = await import('../crypto')
+          const { encrypted, salt } = await encryptUrl(finalStorageUrl, password)
+          videoStorageUrl = encrypted
+          isProtected = true
+          passwordSalt = salt
+        }
+
         await insertVideo({
           short_code: shortCode,
           title: title || 'Untitled Recording',
-          storage_url: finalStorageUrl,
+          storage_url: videoStorageUrl,
           duration_ms: elapsedSeconds * 1000,
           capture_mode: 'screen',
+          is_protected: isProtected,
+          password_salt: passwordSalt,
         }, storageId)
 
         setUploadProgress(100)

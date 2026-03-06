@@ -26,7 +26,9 @@ CREATE TABLE IF NOT EXISTS videos (
   view_count integer DEFAULT 0,
   duration_ms integer,
   capture_mode text NOT NULL,
-  created_at timestamptz DEFAULT now()
+  created_at timestamptz DEFAULT now(),
+  is_protected boolean DEFAULT false,
+  password_salt text
 );
 
 CREATE TABLE IF NOT EXISTS reactions (
@@ -64,6 +66,14 @@ DO $$ BEGIN
   -- capture_mode
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='videos' AND column_name='capture_mode') THEN
     ALTER TABLE videos ADD COLUMN capture_mode text NOT NULL DEFAULT 'screen';
+  END IF;
+  -- is_protected
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='videos' AND column_name='is_protected') THEN
+    ALTER TABLE videos ADD COLUMN is_protected boolean DEFAULT false;
+  END IF;
+  -- password_salt
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='videos' AND column_name='password_salt') THEN
+    ALTER TABLE videos ADD COLUMN password_salt text;
   END IF;
 END $$;
 
