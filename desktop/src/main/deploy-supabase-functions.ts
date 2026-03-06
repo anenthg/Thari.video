@@ -1,7 +1,3 @@
-import { execFile } from 'child_process'
-import { mkdirSync, writeFileSync, rmSync, existsSync } from 'fs'
-import { join } from 'path'
-import { tmpdir } from 'os'
 import { net } from 'electron'
 
 export const SUPABASE_FUNCTIONS_VERSION = '1.0.0'
@@ -252,53 +248,6 @@ function log(msg: string, data?: unknown): void {
   }
 }
 
-function findBin(name: string): string {
-  const candidates = [
-    `/usr/local/bin/${name}`,
-    `/opt/homebrew/bin/${name}`,
-    `${process.env.HOME}/.nvm/current/bin/${name}`,
-    name,
-  ]
-  for (const c of candidates) {
-    try {
-      if (c === name) return c
-      if (existsSync(c)) return c
-    } catch {
-      // continue
-    }
-  }
-  return name
-}
-
-function runCommand(
-  cmd: string,
-  args: string[],
-  cwd: string,
-  env?: Record<string, string>,
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const proc = execFile(
-      cmd,
-      args,
-      {
-        cwd,
-        env: { ...process.env, ...env },
-        timeout: 300_000,
-        maxBuffer: 10 * 1024 * 1024,
-      },
-      (error, stdout, stderr) => {
-        if (error) {
-          reject(new Error(`${cmd} ${args.join(' ')} failed: ${stderr || error.message}`))
-        } else {
-          resolve(stdout)
-        }
-      },
-    )
-    proc.stdout?.on('data', (data) => log(`[stdout] ${data}`))
-    proc.stderr?.on('data', (data) => log(`[stderr] ${data}`))
-  })
-}
-
 // ---------------------------------------------------------------------------
 // Database setup via Management API
 // ---------------------------------------------------------------------------
@@ -419,53 +368,76 @@ export async function deploySupabaseEdgeFunction(
   accessToken: string,
   onProgress?: (stage: SupabaseDeployStage) => void,
 ): Promise<{ ok: boolean; error?: string }> {
-  const tmpDir = join(tmpdir(), `openloom-supabase-${Date.now()}`)
-
   try {
     log('=== Starting Supabase Edge Function deployment ===')
     onProgress?.('deploy-functions')
 
-    // Create temp directory structure: supabase/functions/openloom/
-    const functionsDir = join(tmpDir, 'supabase', 'functions', 'openloom')
-    mkdirSync(functionsDir, { recursive: true })
+    // Deploy via Supabase Management API (no CLI / Node.js required)
+    log('Deploying edge function via Management API...')
 
-    // Write the Edge Function source
-    writeFileSync(join(functionsDir, 'index.ts'), EDGE_FUNCTION_SOURCE)
+    const metadata = JSON.stringify({
+      entrypoint_path: 'index.ts',
+      name: 'openloom',
+    })
 
-    log(`Files written to ${tmpDir}`)
+    // Build multipart/form-data manually since Electron's net.fetch
+    // doesn't support the FormData API
+    const boundary = `----OpenLoomBoundary${Date.now()}`
+    const sourceBytes = new TextEncoder().encode(EDGE_FUNCTION_SOURCE)
 
-    // Deploy via Supabase CLI
-    log('Running npx supabase functions deploy...')
-    const deployResult = await runCommand(
-      findBin('npx'),
-      [
-        '--yes',
-        'supabase',
-        'functions',
-        'deploy',
-        'openloom',
-        '--project-ref',
-        projectRef,
-        '--no-verify-jwt',
-      ],
-      tmpDir,
-      { SUPABASE_ACCESS_TOKEN: accessToken },
+    const parts: Uint8Array[] = []
+    const enc = (s: string) => new TextEncoder().encode(s)
+
+    // metadata part
+    parts.push(enc(`--${boundary}\r\n`))
+    parts.push(enc('Content-Disposition: form-data; name="metadata"\r\n'))
+    parts.push(enc('Content-Type: application/json\r\n\r\n'))
+    parts.push(enc(metadata))
+    parts.push(enc('\r\n'))
+
+    // file part
+    parts.push(enc(`--${boundary}\r\n`))
+    parts.push(enc('Content-Disposition: form-data; name="file"; filename="index.ts"\r\n'))
+    parts.push(enc('Content-Type: application/typescript\r\n\r\n'))
+    parts.push(sourceBytes)
+    parts.push(enc('\r\n'))
+
+    // closing boundary
+    parts.push(enc(`--${boundary}--\r\n`))
+
+    // Concatenate all parts into a single Uint8Array
+    const totalLength = parts.reduce((sum, p) => sum + p.byteLength, 0)
+    const body = new Uint8Array(totalLength)
+    let offset = 0
+    for (const p of parts) {
+      body.set(p, offset)
+      offset += p.byteLength
+    }
+
+    const res = await net.fetch(
+      `https://api.supabase.com/v1/projects/${projectRef}/functions/deploy?slug=openloom&verify_jwt=false`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        },
+        body: body.buffer,
+      },
     )
-    log('Supabase deploy output:', deployResult)
 
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`Management API returned ${res.status}: ${text}`)
+    }
+
+    log('Edge function deployed successfully via Management API')
     log('=== Supabase Edge Function deployment finished ===')
     return { ok: true }
   } catch (e) {
     const errMsg = e instanceof Error ? e.message : String(e)
     log(`=== Supabase Edge Function deployment FAILED: ${errMsg} ===`)
     return { ok: false, error: `Supabase deployment failed: ${errMsg}` }
-  } finally {
-    try {
-      rmSync(tmpDir, { recursive: true, force: true })
-      log(`Cleaned up ${tmpDir}`)
-    } catch {
-      // ignore cleanup errors
-    }
   }
 }
 

@@ -1,5 +1,5 @@
 import { execFile } from 'child_process'
-import { mkdirSync, writeFileSync, rmSync, existsSync } from 'fs'
+import { mkdirSync, writeFileSync, rmSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 
@@ -386,21 +386,8 @@ function log(msg: string, data?: unknown): void {
 }
 
 function findBin(name: string): string {
-  // On macOS, Electron doesn't inherit PATH from shell — try common locations
-  const candidates = [
-    `/usr/local/bin/${name}`,
-    `/opt/homebrew/bin/${name}`,
-    `${process.env.HOME}/.nvm/current/bin/${name}`,
-    name, // fallback to PATH
-  ]
-  for (const c of candidates) {
-    try {
-      if (c === name) return c
-      if (existsSync(c)) return c
-    } catch {
-      // continue
-    }
-  }
+  // With shell: true in runCommand, the shell resolves commands via PATH.
+  // No need to hardcode macOS paths — the shell handles resolution.
   return name
 }
 
@@ -427,6 +414,19 @@ export async function deployConvexFunctions(
     writeFileSync(join(convexDir, 'http.ts'), CONVEX_HTTP_TS)
 
     log(`Files written to ${tmpDir}`)
+
+    // Pre-flight check: ensure Node.js / npm is available
+    log('Checking for Node.js...')
+    try {
+      await runCommand('node', ['--version'], tmpDir)
+    } catch {
+      return {
+        ok: false,
+        error:
+          'Convex setup requires Node.js (used once during initial setup to deploy your backend functions). ' +
+          'Install it from https://nodejs.org, then restart OpenLoom and try again.',
+      }
+    }
 
     // Install convex dependency
     log('Installing convex dependency...')
@@ -475,6 +475,7 @@ function runCommand(
         env: { ...process.env, ...env },
         timeout: 300_000, // 5 minutes
         maxBuffer: 10 * 1024 * 1024,
+        shell: true, // Resolves npx.cmd on Windows and inherits proper PATH on macOS
       },
       (error, stdout, stderr) => {
         if (error) {
