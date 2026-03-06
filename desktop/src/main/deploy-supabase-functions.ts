@@ -378,6 +378,7 @@ export async function deploySupabaseEdgeFunction(
     const metadata = JSON.stringify({
       entrypoint_path: 'index.ts',
       name: 'openloom',
+      verify_jwt: false,
     })
 
     // Build multipart/form-data manually since Electron's net.fetch
@@ -415,7 +416,7 @@ export async function deploySupabaseEdgeFunction(
     }
 
     const res = await net.fetch(
-      `https://api.supabase.com/v1/projects/${projectRef}/functions/deploy?slug=openloom&verify_jwt=false`,
+      `https://api.supabase.com/v1/projects/${projectRef}/functions/deploy?slug=openloom`,
       {
         method: 'POST',
         headers: {
