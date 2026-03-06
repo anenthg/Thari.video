@@ -140,7 +140,7 @@ export default function DownloadButton() {
   const [showDialog, setShowDialog] = useState(false);
   const [platform, setPlatform] = useState<Platform>("mac");
   const ref = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     setPlatform(detectPlatform());
