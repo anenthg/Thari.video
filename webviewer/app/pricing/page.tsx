@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import HeroCTA from "../ChromeExtensionButton";
+import Footer from "../Footer";
 
 /* ------------------------------------------------------------------ */
 /* Types & Data                                                       */
@@ -1027,39 +1028,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* -------------------------------------------------------------- */}
-      {/* FOOTER                                                         */}
-      {/* -------------------------------------------------------------- */}
-      <footer className="border-t border-[var(--cotton)]/5 bg-[var(--warp-indigo)] px-6 py-8">
-        <div className="mx-auto flex max-w-screen-xl items-center justify-between text-sm text-[var(--cotton)]/40">
-          <span className="font-mono text-xs text-[var(--cotton)]/25">
-            Source:{" "}
-            {config.sourceLinks.map((link, i) => (
-              <span key={link.href}>
-                {i > 0 && <> &middot; </>}
-                <a
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="border-b border-dotted border-[var(--cotton)]/25 transition-colors hover:text-[var(--cotton)]/40"
-                >
-                  {link.label}
-                </a>
-              </span>
-            ))}
-          </span>
-          <span className="font-mono text-xs text-[var(--cotton)]/25">
-            Estimates based on VP9/WebM at stated bitrates
-            {" · "}
-            <Link
-              href="/privacy"
-              className="transition-colors hover:text-[var(--cotton)]/40"
-            >
-              Privacy
-            </Link>
-          </span>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

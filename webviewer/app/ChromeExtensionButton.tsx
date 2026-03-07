@@ -167,24 +167,22 @@ export default function HeroCTA() {
 
   return (
     <>
-      <div className="mt-8 flex flex-wrap items-center gap-4">
-        {/* Primary CTA — Chrome Extension */}
-        <button
-          onClick={handleExtensionClick}
-          className="flex items-center rounded-lg bg-[var(--crimson)] px-6 py-3 text-base font-semibold text-white transition-all cursor-pointer hover:brightness-110 hover:shadow-[0_0_30px_rgba(217,43,43,0.3)] active:scale-[0.97]"
-        >
-          <ChromeIcon className="mr-2 h-5 w-5" />
-          Download Chrome Extension
-        </button>
+      {/* Primary CTA — Chrome Extension */}
+      <button
+        onClick={handleExtensionClick}
+        className="flex items-center rounded-lg bg-[var(--crimson)] px-6 py-3 text-base font-semibold text-white transition-all cursor-pointer hover:brightness-110 hover:shadow-[0_0_30px_rgba(217,43,43,0.3)] active:scale-[0.97]"
+      >
+        <ChromeIcon className="mr-2 h-5 w-5" />
+        Download Chrome Extension
+      </button>
 
-        {/* How it works */}
-        <a
-          href="#how-it-works"
-          className="rounded-lg border border-[var(--cotton)]/15 px-6 py-3 text-base font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"
-        >
-          How it works
-        </a>
-      </div>
+      {/* How it works */}
+      <a
+        href="#how-it-works"
+        className="rounded-lg border border-[var(--cotton)]/15 px-6 py-3 text-base font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"
+      >
+        How it works
+      </a>
 
       {showDialog && <InstallDialog onClose={() => setShowDialog(false)} />}
     </>

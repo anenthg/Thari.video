@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import HeroCTA from "../ChromeExtensionButton";
+import Footer from "../Footer";
 
 function useScrollReveal() {
   useEffect(() => {
@@ -960,7 +961,7 @@ IndexedDB (openloom-blobs)
               href="https://github.com/anenthg/OpenLoom"
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-xl border border-[var(--cotton)]/15 px-8 py-4 text-lg font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"
+              className="rounded-lg border border-[var(--cotton)]/15 px-6 py-3 text-base font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"
             >
               View Source
             </a>
@@ -968,42 +969,7 @@ IndexedDB (openloom-blobs)
         </div>
       </section>
 
-      {/* ---------------------------------------------------------------- */}
-      {/* FOOTER                                                           */}
-      {/* ---------------------------------------------------------------- */}
-      <footer className="border-t border-[var(--cotton)]/5 bg-[var(--warp-indigo)] px-6 py-8">
-        <div className="mx-auto flex max-w-screen-xl items-center justify-between text-sm text-[var(--cotton)]/40">
-          <span className="font-mono text-xs text-[var(--cotton)]/25">
-            OpenLoom — inspired by the thari (&#2980;&#2993;&#3007;), Tamil for loom. Design from{" "}
-            <a
-              href="https://en.wikipedia.org/wiki/Bhavani_Jamakkalam"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:text-[var(--cotton)]/40"
-            >
-              Bhavani Jamakkalam
-            </a>
-          </span>
-          <span className="font-mono text-xs text-[var(--cotton)]/25">
-            git init ~{" "}
-            <a
-              href="https://x.com/anenth"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:text-[var(--cotton)]/40"
-            >
-              @anenth
-            </a>
-            {" · "}
-            <a
-              href="/privacy"
-              className="transition-colors hover:text-[var(--cotton)]/40"
-            >
-              Privacy
-            </a>
-          </span>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }
