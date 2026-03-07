@@ -4,6 +4,7 @@ node_modules/
 # Build output
 desktop/out/
 desktop/release/
+extension/dist/
 
 # Test results
 desktop/test-results/

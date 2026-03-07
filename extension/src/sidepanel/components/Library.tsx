@@ -1,0 +1,205 @@
+import { useCallback, useEffect, useState } from 'react'
+import type { AppSettings, Video } from '../../lib/types'
+import type { ExtensionMessage } from '../../lib/messages'
+import { CheckIcon, ClockIcon, EyeIcon, FolderIcon, LinkIcon, TrashIcon } from './icons'
+
+interface Props {
+  settings: AppSettings
+}
+
+function formatDuration(ms: number | null): string {
+  if (ms == null) return '0:00'
+  const totalSeconds = Math.floor(ms / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+}
+
+function formatRelativeDate(dateStr: string): string {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffSeconds = Math.floor(diffMs / 1000)
+  const diffMinutes = Math.floor(diffSeconds / 60)
+  const diffHours = Math.floor(diffMinutes / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffSeconds < 60) return 'just now'
+  if (diffMinutes < 60) return `${diffMinutes}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 30) return `${diffDays}d ago`
+  return date.toLocaleDateString()
+}
+
+function getShareURL(settings: AppSettings, shortCode: string): string {
+  const provider = settings.provider || 'firebase'
+  let projectId = ''
+  if (provider === 'supabase') {
+    projectId = settings.supabaseProjectRef || ''
+  } else if (provider === 'convex') {
+    projectId = settings.convexDeploymentName || ''
+  } else {
+    projectId = settings.firebaseProjectId || ''
+  }
+  const encoded = btoa(`${provider}-${projectId}`)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
+  return `https://openloom.live/v/${encoded}/${shortCode}`
+}
+
+export default function Library({ settings }: Props) {
+  const [videos, setVideos] = useState<Video[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const refresh = useCallback(async () => {
+    try {
+      setError(null)
+      setLoading(true)
+      const result = await chrome.runtime.sendMessage({ type: 'LIST_VIDEOS' } as ExtensionMessage) as { videos?: Video[]; error?: string }
+      if (result.error) {
+        setError(result.error)
+      } else {
+        setVideos(result.videos || [])
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load videos')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  const handleCopyLink = async (video: Video) => {
+    const url = getShareURL(settings, video.short_code)
+    await navigator.clipboard.writeText(url)
+    setCopiedId(video.short_code)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  const handleDelete = async (video: Video) => {
+    if (!confirm(`Delete "${video.title}"? This cannot be undone.`)) return
+    try {
+      setDeletingId(video.short_code)
+      await chrome.runtime.sendMessage({ type: 'DELETE_VIDEO', shortCode: video.short_code } as ExtensionMessage)
+      await refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete video')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <div
+        data-testid="library-view"
+        className="flex items-center justify-center h-full"
+      >
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-zinc-600 border-t-[var(--crimson)]" />
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div
+        data-testid="library-view"
+        className="flex flex-col items-center justify-center h-full text-zinc-500 gap-3"
+      >
+        <p className="text-sm text-red-400">{error}</p>
+        <button
+          onClick={refresh}
+          className="px-3 py-1.5 text-sm rounded-lg bg-zinc-700 text-zinc-200 hover:bg-zinc-600 transition-all duration-200"
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  // Empty state
+  if (videos.length === 0) {
+    return (
+      <div
+        data-testid="library-view"
+        className="flex flex-col items-center justify-center h-full text-zinc-500"
+      >
+        <FolderIcon className="w-12 h-12 mb-3 text-zinc-600" />
+        <h2 className="text-lg font-semibold text-zinc-300">No recordings yet</h2>
+        <p className="text-sm">Your recordings will appear here after uploading</p>
+      </div>
+    )
+  }
+
+  // Video list
+  return (
+    <div data-testid="library-view" className="p-4">
+      <h2 className="text-lg font-semibold text-zinc-200 mb-4">Library</h2>
+      <div className="flex flex-col gap-2">
+        {videos.map((video) => {
+          const isDeleting = deletingId === video.short_code
+          const isCopied = copiedId === video.short_code
+
+          return (
+            <div
+              key={video.id}
+              className={`flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-all duration-200 ${
+                isDeleting ? 'opacity-50 pointer-events-none' : ''
+              }`}
+            >
+              {/* Title + metadata */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-zinc-200 truncate">
+                  {video.title}
+                </p>
+                <div className="flex items-center gap-2 text-xs text-zinc-500 mt-0.5">
+                  <span className="flex items-center gap-1">
+                    <ClockIcon className="w-3 h-3" />
+                    {formatDuration(video.duration_ms)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <EyeIcon className="w-3 h-3" />
+                    {video.view_count}
+                  </span>
+                  <span>·</span>
+                  <span>{formatRelativeDate(video.created_at)}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <button
+                  onClick={() => handleCopyLink(video)}
+                  title="Copy link"
+                  className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 transition-all duration-200"
+                >
+                  {isCopied ? (
+                    <CheckIcon className="w-4 h-4 text-green-400" />
+                  ) : (
+                    <LinkIcon className="w-4 h-4" />
+                  )}
+                </button>
+                <button
+                  onClick={() => handleDelete(video)}
+                  title="Delete"
+                  className="p-1.5 rounded-md text-zinc-400 hover:text-red-400 hover:bg-zinc-700 transition-all duration-200 hover:shadow-[0_0_10px_rgba(248,113,113,0.15)]"
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
