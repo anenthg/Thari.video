@@ -209,7 +209,7 @@ export default function LandingPage() {
               {
                 icon: "selfhost",
                 title: "Self-hosted",
-                desc: "Recordings live on your own backend \u2014 Supabase, Convex, or Firebase. No third-party servers, no vendor lock-in.",
+                desc: "Recordings live on your own backend \u2014 Supabase, and soon (Convex & Firebase). No third-party servers, no vendor lock-in.",
               },
               {
                 icon: "screen",

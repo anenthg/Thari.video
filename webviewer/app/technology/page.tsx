@@ -66,9 +66,9 @@ export default function TechnologyPage() {
           <div className="mt-6 font-mono text-sm leading-relaxed">
             <div className="text-[var(--mustard)]">
               <span className="text-[var(--emerald)]">$</span> A complete
-              technical breakdown of the end-to-end workflow. From recording on
-              your desktop to playback in any browser — with your choice of
-              Supabase, Convex, or Firebase as your backend.
+              technical breakdown of the end-to-end workflow. From recording in
+              your Chrome extension to playback in any browser — powered by
+              Supabase as your backend.
             </div>
           </div>
         </div>
@@ -115,13 +115,14 @@ export default function TechnologyPage() {
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <rect x="2" y="3" width="20" height="14" rx="2" />
-                <path d="M8 21h8M12 17v4" strokeLinecap="round" />
+                <path d="M9 4h2v2a2 2 0 104 0V4h2a2 2 0 012 2v3h-2a2 2 0 100 4h2v3a2 2 0 01-2 2h-3v-2a2 2 0 10-4 0v2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
               </svg>
             </span>
             <span className="font-mono text-sm font-bold text-[var(--crimson)]">
-              01 — YOUR MACHINE
+              01 — YOUR BROWSER
             </span>
           </div>
           <h2
@@ -129,7 +130,7 @@ export default function TechnologyPage() {
             data-reveal
             data-delay="100"
           >
-            Your Machine, Your Rules
+            Your Browser, Your Rules
           </h2>
 
           <div
@@ -138,25 +139,26 @@ export default function TechnologyPage() {
             data-delay="200"
           >
             <p>
-              When you download OpenLoom Desktop, you get a native macOS
-              application that runs entirely on your hardware. During setup,
-              you choose one of three backend providers —{" "}
-              <strong className="text-[var(--emerald)]">Supabase</strong>,{" "}
-              <strong className="text-[var(--crimson)]">Convex</strong>, or{" "}
-              <strong className="text-[var(--mustard)]">Firebase</strong> — and
-              connect it to your own project. The app stores your{" "}
+              The OpenLoom Chrome extension runs entirely in your browser.
+              During setup, you connect your{" "}
+              <strong className="text-[var(--emerald)]">Supabase</strong>{" "}
+              project by pasting your project URL and access token. The
+              extension stores your{" "}
               <strong className="text-[var(--cotton)]">
                 backend credentials
               </strong>{" "}
-              in your application&apos;s sandboxed container. These credentials
-              never leave your computer.
+              in Chrome&apos;s local storage, sandboxed to the extension.
+              These credentials never leave your browser.
+              <span className="text-[var(--cotton)]/40">
+                {" "}(Convex and Firebase support coming soon.)
+              </span>
             </p>
 
             <p>
               Nothing is uploaded until you explicitly choose to share a
-              recording. When you do, the desktop app encodes the video,
-              and uploads it directly to your backend&apos;s file storage —
-              authenticated by the credentials that only your machine has.
+              recording. When you do, the extension encodes the video
+              and uploads it directly to your Supabase storage —
+              authenticated by the credentials that only your browser has.
             </p>
           </div>
 
@@ -171,21 +173,21 @@ export default function TechnologyPage() {
               <span className="h-2.5 w-2.5 rounded-full bg-[var(--mustard)]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[var(--emerald)]" />
               <span className="ml-3 font-mono text-xs text-[var(--cotton)]/30">
-                ~/Library/Application Support/OpenLoom/
+                chrome.storage.local (extension sandbox)
               </span>
             </div>
             <pre className="overflow-x-auto p-5 font-mono text-sm leading-relaxed text-[var(--cotton)]/60">
-              <code>{`├── config.json                  # Provider type, project ID & settings
-├── credentials/
-│   ├── service-account.json     # Firebase SA key (if Firebase)
-│   ├── convex-deploy-key        # Convex deploy key (if Convex)
-│   └── supabase-tokens          # Supabase access token (if Supabase)
-│                                # ⚠ NEVER uploaded. NEVER shared.
-├── preferences.json             # Recording defaults (resolution, fps, etc.)
-└── temp/                        # Raw recordings before encoding
-    └── recording-2024-01-15/    # Cleaned up after upload
-        ├── raw-capture.mov
-        └── encoded.webm`}</code>
+              <code>{`settings
+├── provider: "supabase"           # Backend provider
+├── supabaseProjectUrl: "https://…"# Your Supabase project URL
+├── supabaseServiceRoleKey: "…"    # Service role key
+│                                  # ⚠ NEVER uploaded. NEVER shared.
+├── supabaseProjectRef: "…"        # Project reference ID
+└── provisioned: true              # Backend setup complete
+
+IndexedDB (openloom-blobs)
+└── recording-blob                 # Temp recording before upload
+                                   # Cleaned up after share`}</code>
             </pre>
           </div>
 
@@ -262,9 +264,9 @@ export default function TechnologyPage() {
             data-reveal
             data-delay="200"
           >
-            OpenLoom supports three backend providers. Each stores the same
-            data — video files, metadata, and reactions — but uses the
-            provider&apos;s native services. Here&apos;s how each one works.
+            OpenLoom currently uses Supabase as its backend. It stores
+            video files, metadata, and reactions using Supabase&apos;s native
+            services. Convex and Firebase support are coming soon.
           </p>
 
           <BackendTabs />
@@ -340,34 +342,20 @@ export default function TechnologyPage() {
                   <span className="text-[var(--emerald)]">openloom</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 opacity-30">
                 <span className="w-20 shrink-0 rounded bg-[var(--crimson)]/10 px-2 py-0.5 text-center text-[10px] font-bold text-[var(--crimson)]">
                   Convex
                 </span>
                 <div>
-                  <span className="text-[var(--cotton)]/40">https://</span>
-                  <span className="text-[var(--crimson)]">
-                    {"{deployment}"}
-                  </span>
-                  <span className="text-[var(--cotton)]/60">
-                    .convex.site
-                  </span>
+                  <span className="text-[var(--cotton)]/40">Coming soon</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 opacity-30">
                 <span className="w-20 shrink-0 rounded bg-[var(--mustard)]/10 px-2 py-0.5 text-center text-[10px] font-bold text-[var(--mustard)]">
                   Firebase
                 </span>
                 <div>
-                  <span className="text-[var(--cotton)]/40">https://</span>
-                  <span className="text-[var(--cotton)]/60">us-central1-</span>
-                  <span className="text-[var(--mustard)]">
-                    {"{project-id}"}
-                  </span>
-                  <span className="text-[var(--cotton)]/60">
-                    .cloudfunctions.net/
-                  </span>
-                  <span className="text-[var(--mustard)]">openloom</span>
+                  <span className="text-[var(--cotton)]/40">Coming soon</span>
                 </div>
               </div>
             </div>
@@ -398,7 +386,6 @@ export default function TechnologyPage() {
                   {
                     method: "GET",
                     endpoint: "/v?code={code}",
-                    alt: "/v/{code}",
                     purpose:
                       "Fetch video metadata — title, duration, view count, capture mode",
                     color: "var(--emerald)",
@@ -406,7 +393,6 @@ export default function TechnologyPage() {
                   {
                     method: "POST",
                     endpoint: "/view",
-                    alt: "/v/{code}/view",
                     purpose:
                       "Increment the view counter. Fire-and-forget, no response body",
                     color: "var(--mustard)",
@@ -414,7 +400,6 @@ export default function TechnologyPage() {
                   {
                     method: "GET",
                     endpoint: "/reactions?code={code}",
-                    alt: "/v/{code}/reactions",
                     purpose:
                       "Fetch all timestamped emoji reactions for the video",
                     color: "var(--emerald)",
@@ -422,7 +407,6 @@ export default function TechnologyPage() {
                   {
                     method: "POST",
                     endpoint: "/reactions/add",
-                    alt: "/v/{code}/reactions",
                     purpose:
                       "Add a new emoji reaction at a specific timestamp",
                     color: "var(--mustard)",
@@ -446,10 +430,7 @@ export default function TechnologyPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3 font-mono text-xs text-[var(--cotton)]/70">
-                      <span>{ep.endpoint}</span>
-                      <span className="ml-2 text-[var(--cotton)]/30">
-                        (Firebase: {ep.alt})
-                      </span>
+                      {ep.endpoint}
                     </td>
                     <td className="px-5 py-3 text-[var(--cotton)]/50">
                       {ep.purpose}
@@ -476,12 +457,10 @@ export default function TechnologyPage() {
               <path d="M12 16v-4M12 8h.01" strokeLinecap="round" />
             </svg>
             <p className="text-sm text-[var(--cotton)]/60">
-              Supabase and Convex use query-parameter style URLs{" "}
+              Supabase uses query-parameter style URLs{" "}
               (<code className="font-mono text-[var(--emerald)]">/v?code=xxx</code>).
-              Firebase uses path-based URLs{" "}
-              (<code className="font-mono text-[var(--mustard)]">/v/{"{code}"}</code>).
-              The web viewer automatically selects the correct pattern based on
-              the provider prefix in the share link.
+              The web viewer automatically selects the correct URL pattern
+              based on the provider prefix in the share link.
             </p>
           </div>
         </div>
@@ -1038,16 +1017,19 @@ const BACKEND_TABS = [
     id: "supabase" as const,
     label: "Supabase",
     color: "var(--emerald)",
+    available: true,
   },
   {
     id: "convex" as const,
     label: "Convex",
     color: "var(--crimson)",
+    available: false,
   },
   {
     id: "firebase" as const,
     label: "Firebase",
     color: "var(--mustard)",
+    available: false,
   },
 ];
 
@@ -1061,8 +1043,8 @@ function BackendTabs() {
         {BACKEND_TABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActive(tab.id)}
-            className="rounded-lg px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider transition-all"
+            onClick={() => tab.available && setActive(tab.id)}
+            className={`rounded-lg px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider transition-all ${!tab.available ? "cursor-not-allowed opacity-40" : ""}`}
             style={{
               color: active === tab.id ? tab.color : "rgba(245,245,232,0.3)",
               backgroundColor:
@@ -1076,7 +1058,7 @@ function BackendTabs() {
                   : "rgba(245,245,232,0.05)",
             }}
           >
-            {tab.label}
+            {tab.label}{!tab.available && " (soon)"}
           </button>
         ))}
       </div>
@@ -1134,7 +1116,7 @@ Public URL:
         </div>
         <p className="mb-4 text-sm leading-relaxed text-[var(--cotton)]/50">
           Two tables store video metadata and reactions. Accessed via
-          PostgREST (from desktop) and Edge Functions (from the viewer).
+          PostgREST (from the extension) and Edge Functions (from the viewer).
           Row Level Security policies protect all data.
         </p>
         <pre className="rounded-lg bg-black/20 p-3 font-mono text-xs leading-relaxed text-[var(--emerald)]/70">
@@ -1178,8 +1160,8 @@ reactions (table)
           environment variables — no manual secrets configuration needed.
         </p>
         <p className="text-sm leading-relaxed text-[var(--cotton)]/50">
-          Deployed automatically by OpenLoom Desktop via{" "}
-          <code className="font-mono text-[var(--cotton)]/60">npx supabase functions deploy</code>.
+          Deployed automatically by the Chrome extension during setup via the
+          Supabase Management API.
         </p>
       </div>
 
@@ -1198,7 +1180,7 @@ reactions (table)
         </div>
         <p className="mb-4 text-sm leading-relaxed text-[var(--cotton)]/50">
           Both tables have RLS enabled. Only the service role (used by
-          Edge Functions and the desktop app) can read and write data.
+          Edge Functions and the Chrome extension) can read and write data.
           Direct public access is denied.
         </p>
         <pre className="rounded-lg bg-black/20 p-3 font-mono text-xs leading-relaxed text-[var(--cotton)]/40">
@@ -1297,8 +1279,8 @@ reactions (table)
           for video files and returning 302 redirects.
         </p>
         <p className="text-sm leading-relaxed text-[var(--cotton)]/50">
-          Deployed automatically by OpenLoom Desktop via{" "}
-          <code className="font-mono text-[var(--cotton)]/60">npx convex deploy</code>.
+          Deployed automatically by the Chrome extension during setup via the
+          Convex deploy API.
         </p>
       </div>
 
@@ -1316,7 +1298,7 @@ reactions (table)
           </span>
         </div>
         <p className="text-sm leading-relaxed text-[var(--cotton)]/50">
-          The desktop app uses a deploy key for admin-level access.
+          The Chrome extension uses a deploy key for admin-level access.
           HTTP actions are the only public surface — they validate
           requests and control what data is exposed. Direct database
           queries from the outside are not possible.
@@ -1506,7 +1488,7 @@ function ArchitectureDiagram() {
       viewBox="0 0 940 560"
       fill="none"
       className="w-full"
-      aria-label="Architecture diagram showing data flow between Desktop App, Your Backend, and Web Viewer"
+      aria-label="Architecture diagram showing data flow between Chrome Extension, Your Backend, and Web Viewer"
     >
       <defs>
         <filter id="glow-green">
@@ -1542,10 +1524,10 @@ function ArchitectureDiagram() {
         fontWeight="700"
         letterSpacing="0.1em"
       >
-        YOUR MACHINE
+        YOUR BROWSER
       </text>
 
-      {/* Desktop App box */}
+      {/* Chrome Extension box */}
       <rect
         x="16"
         y="48"
@@ -1557,45 +1539,25 @@ function ArchitectureDiagram() {
         strokeWidth="1"
         opacity="0.7"
       />
-      {/* Monitor icon */}
-      <rect
-        x="82"
-        y="62"
-        width="50"
-        height="34"
-        rx="4"
+      {/* Puzzle piece icon */}
+      <path
+        d="M90 65h8v-3a4 4 0 118 0v3h8a2 2 0 012 2v7h-3a4 4 0 100 8h3v7a2 2 0 01-2 2h-7v-3a4 4 0 10-8 0v3h-7a2 2 0 01-2-2V67a2 2 0 012-2z"
         stroke="#D92B2B"
         strokeWidth="1.5"
         fill="none"
+        strokeLinejoin="round"
       />
-      <line
-        x1="107"
-        y1="96"
-        x2="107"
-        y2="104"
-        stroke="#D92B2B"
-        strokeWidth="1.5"
-      />
-      <line
-        x1="95"
-        y1="104"
-        x2="119"
-        y2="104"
-        stroke="#D92B2B"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <circle cx="107" cy="79" r="4" fill="#D92B2B" className="animate-pulse" />
+      <circle cx="107" cy="80" r="3" fill="#D92B2B" className="animate-pulse" />
       <text
         x="107"
-        y="128"
+        y="120"
         textAnchor="middle"
         fill="#F5F5E8"
-        fontSize="13"
+        fontSize="12"
         fontFamily="var(--font-space-grotesk), sans-serif"
         fontWeight="600"
       >
-        OpenLoom Desktop
+        Chrome Extension
       </text>
 
       {/* Lock icon + Credentials */}
@@ -1635,7 +1597,7 @@ function ArchitectureDiagram() {
         fontFamily="var(--font-jetbrains-mono), monospace"
         opacity="0.4"
       >
-        Screen Recorder
+        Screen Capture API
       </text>
       <text
         x="44"
@@ -1645,7 +1607,7 @@ function ArchitectureDiagram() {
         fontFamily="var(--font-jetbrains-mono), monospace"
         opacity="0.4"
       >
-        Video Encoder
+        Canvas Compositor
       </text>
       <text
         x="44"
@@ -1655,7 +1617,7 @@ function ArchitectureDiagram() {
         fontFamily="var(--font-jetbrains-mono), monospace"
         opacity="0.4"
       >
-        File Uploader
+        MediaRecorder
       </text>
       <text
         x="44"
@@ -1665,7 +1627,7 @@ function ArchitectureDiagram() {
         fontFamily="var(--font-jetbrains-mono), monospace"
         opacity="0.4"
       >
-        Provider SDK / REST
+        Supabase REST API
       </text>
       <text
         x="44"
@@ -1675,7 +1637,7 @@ function ArchitectureDiagram() {
         fontFamily="var(--font-jetbrains-mono), monospace"
         opacity="0.5"
       >
-        credentials.json
+        chrome.storage.local
       </text>
 
       {/* "Private" label at bottom */}
