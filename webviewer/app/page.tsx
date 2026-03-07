@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import DownloadButton from "./DownloadButton";
+import HeroCTA from "./ChromeExtensionButton";
 
 /* ------------------------------------------------------------------ */
 /* Terminal autocomplete dropdown for backend providers                 */
@@ -138,15 +138,7 @@ export default function LandingPage() {
           </div>
 
           {/* CTA */}
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <DownloadButton />
-            <a
-              href="#how-it-works"
-              className="rounded-lg border border-[var(--cotton)]/15 px-6 py-3 text-base font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"
-            >
-              How it works
-            </a>
-          </div>
+          <HeroCTA />
         </div>
 
         {/* Scroll indicator */}
@@ -399,6 +391,13 @@ export default function LandingPage() {
             >
               ☕ Buy me a coffee
             </a>
+            {" · "}
+            <Link
+              href="/privacy"
+              className="transition-colors hover:text-[var(--cotton)]/40"
+            >
+              Privacy
+            </Link>
           </span>
         </div>
       </footer>

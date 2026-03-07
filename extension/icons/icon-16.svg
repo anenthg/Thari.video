@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <defs>
+    <pattern id="stripes-16" x="0" y="0" width="6" height="16" patternUnits="userSpaceOnUse">
+      <rect width="6" height="16" fill="#1A1A2E"/>
+      <rect x="0" y="0" width="0" height="16" fill="#F5F5E8" opacity="0.7"/>
+      <rect x="1" y="0" width="1" height="16" fill="#0E9A57"/>
+      <rect x="2" y="0" width="1" height="16" fill="#F5C518"/>
+      <rect x="3" y="0" width="1" height="16" fill="#D92B2B"/>
+      <rect x="4" y="0" width="0" height="16" fill="#0A0A12"/>
+      <rect x="5" y="0" width="1" height="16" fill="#F5C518"/>
+    </pattern>
+    <clipPath id="outer-clip-16">
+      <rect width="16" height="16" rx="3" ry="3"/>
+    </clipPath>
+  </defs>
+
+  <!-- Stripe background -->
+  <g clip-path="url(#outer-clip-16)">
+    <rect width="16" height="16" fill="url(#stripes-16)"/>
+  </g>
+
+  <!-- Dark inner window -->
+  <rect x="2" y="2" width="12" height="12" rx="2" ry="2" fill="#1A1A2E" opacity="0.92"/>
+  <rect x="2" y="2" width="12" height="12" rx="2" ry="2" fill="none" stroke="#F5F5E8" stroke-opacity="0.08" stroke-width="1"/>
+
+  <!-- Traffic light dots -->
+  <circle cx="4" cy="4" r="1" fill="#D92B2B"/>
+  <circle cx="5" cy="4" r="1" fill="#F5C518"/>
+  <circle cx="6" cy="4" r="1" fill="#0E9A57"/>
+
+  <!-- Play triangle -->
+  <polygon points="6.8,7.5 6.8,10.5 9.5,9" fill="#F5F5E8" opacity="0.85"/>
+</svg>

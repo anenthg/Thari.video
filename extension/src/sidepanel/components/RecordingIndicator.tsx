@@ -3,6 +3,7 @@ import { MicIcon, MicOffIcon, StopIcon } from './icons'
 
 interface Props {
   elapsed: number
+  previewDataUrl: string | null
 }
 
 function formatTime(seconds: number): string {
@@ -13,7 +14,7 @@ function formatTime(seconds: number): string {
   return `${m}:${s}`
 }
 
-export default function RecordingIndicator({ elapsed }: Props) {
+export default function RecordingIndicator({ elapsed, previewDataUrl }: Props) {
   const [micMuted, setMicMuted] = useState(false)
 
   const handleMicToggle = () => {
@@ -27,9 +28,24 @@ export default function RecordingIndicator({ elapsed }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-8">
+    <div className="flex flex-col items-center h-full p-4 pt-6">
+      {/* Live preview */}
+      <div className="w-full rounded-xl overflow-hidden bg-zinc-900 mb-6">
+        {previewDataUrl ? (
+          <img
+            src={previewDataUrl}
+            alt="Live preview"
+            className="w-full h-auto rounded-xl"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-zinc-600 text-xs">
+            Starting preview...
+          </div>
+        )}
+      </div>
+
       {/* Pulsing red dot and timer */}
-      <div className="flex items-center gap-3 mb-10">
+      <div className="flex items-center gap-3 mb-4">
         <span className="w-4 h-4 rounded-full bg-[var(--crimson)] animate-pulse" />
         <span className="font-mono text-4xl font-bold text-[var(--crimson)]">
           {formatTime(elapsed)}
@@ -37,7 +53,7 @@ export default function RecordingIndicator({ elapsed }: Props) {
       </div>
 
       {/* Recording status text */}
-      <p className="text-sm text-zinc-400 mb-8">Recording in progress...</p>
+      <p className="text-sm text-zinc-400 mb-6">Recording in progress...</p>
 
       {/* Controls */}
       <div className="flex items-center gap-6">

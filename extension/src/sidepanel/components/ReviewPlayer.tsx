@@ -91,6 +91,7 @@ export default function ReviewPlayer({
   }, [blob])
 
   // Sync play/pause state from video element events
+  // Depends on `blob` because <video> only mounts after blob loads
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
@@ -108,7 +109,7 @@ export default function ReviewPlayer({
       v.removeEventListener('pause', onPause)
       v.removeEventListener('ended', onEnded)
     }
-  }, [])
+  }, [blob])
 
   const onTimeUpdate = useCallback(() => {
     const v = videoRef.current

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { AppSettings, RecordingPhase } from '../../lib/types'
+import type { AppSettings, PipConfig, RecordingPhase } from '../../lib/types'
 import type { StateUpdateMessage } from '../../lib/messages'
 import RecordingSetup from './RecordingSetup'
+import PipLayoutPreview from './PipLayoutPreview'
 import RecordingIndicator from './RecordingIndicator'
 import Countdown from './Countdown'
 import ReviewPlayer from './ReviewPlayer'
@@ -19,7 +20,12 @@ export default function Recording({ settings }: Props) {
   const [shareURL, setShareURL] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [countdownValue, setCountdownValue] = useState(3)
+  const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null)
   const [debugLogs, setDebugLogs] = useState<string[]>([])
+  const [showPipLayout, setShowPipLayout] = useState(false)
+  const [pendingRecordingConfig, setPendingRecordingConfig] = useState<{
+    camera: boolean; mic: boolean; hd: boolean; cameraDeviceId?: string; micDeviceId?: string
+  } | null>(null)
 
   // Request current state on mount
   useEffect(() => {
@@ -28,7 +34,7 @@ export default function Recording({ settings }: Props) {
 
   // Listen for state updates and debug logs
   useEffect(() => {
-    const listener = (message: { type: string; state?: StateUpdateMessage['state']; settings?: StateUpdateMessage['settings']; message?: string }) => {
+    const listener = (message: { type: string; state?: StateUpdateMessage['state']; settings?: StateUpdateMessage['settings']; message?: string; dataUrl?: string }) => {
       if (message.type === 'STATE_UPDATE' && message.state) {
         const s = message.state
         setPhase(s.phase)
@@ -37,6 +43,9 @@ export default function Recording({ settings }: Props) {
         setError(s.error)
         setShareURL(s.shareURL)
         setUploadProgress(s.uploadProgress)
+      }
+      if (message.type === 'PREVIEW_FRAME' && message.dataUrl) {
+        setPreviewDataUrl(message.dataUrl)
       }
       if (message.type === 'DEBUG_LOG' && message.message) {
         setDebugLogs((prev) => [...prev.slice(-50), message.message!])
@@ -68,12 +77,44 @@ export default function Recording({ settings }: Props) {
     return () => clearInterval(interval)
   }, [phase])
 
+  // Clear preview when leaving recording phase
+  useEffect(() => {
+    if (phase !== 'recording') {
+      setPreviewDataUrl(null)
+    }
+  }, [phase])
+
+  const handleRecordingStart = useCallback((config: {
+    camera: boolean; mic: boolean; hd: boolean; cameraDeviceId?: string; micDeviceId?: string
+  }) => {
+    if (config.camera) {
+      setPendingRecordingConfig(config)
+      setShowPipLayout(true)
+    } else {
+      chrome.runtime.sendMessage({ type: 'START_RECORDING', ...config })
+    }
+  }, [])
+
+  const handlePipContinue = useCallback((pipConfig: PipConfig) => {
+    if (pendingRecordingConfig) {
+      chrome.runtime.sendMessage({ type: 'START_RECORDING', ...pendingRecordingConfig, pipConfig })
+    }
+    setShowPipLayout(false)
+    setPendingRecordingConfig(null)
+  }, [pendingRecordingConfig])
+
+  const handlePipBack = useCallback(() => {
+    setShowPipLayout(false)
+    setPendingRecordingConfig(null)
+  }, [])
+
   const handleNewRecording = useCallback(() => {
     setPhase('idle')
     setBlobId(null)
     setShareURL(null)
     setUploadProgress(0)
     setError(null)
+    setPreviewDataUrl(null)
     setDebugLogs([])
     chrome.runtime.sendMessage({ type: 'GET_STATE' })
   }, [])
@@ -113,9 +154,12 @@ export default function Recording({ settings }: Props) {
   }
 
   let content: React.ReactNode
-  switch (phase) {
+
+  if (showPipLayout) {
+    content = <PipLayoutPreview onContinue={handlePipContinue} onBack={handlePipBack} />
+  } else switch (phase) {
     case 'idle':
-      content = <RecordingSetup />
+      content = <RecordingSetup onStart={handleRecordingStart} />
       break
 
     case 'countdown':
@@ -123,7 +167,7 @@ export default function Recording({ settings }: Props) {
       break
 
     case 'recording':
-      content = <RecordingIndicator elapsed={elapsed} />
+      content = <RecordingIndicator elapsed={elapsed} previewDataUrl={previewDataUrl} />
       break
 
     case 'review':
@@ -154,7 +198,7 @@ export default function Recording({ settings }: Props) {
       break
 
     default:
-      content = <RecordingSetup />
+      content = <RecordingSetup onStart={handleRecordingStart} />
   }
 
   return (

@@ -1,6 +1,9 @@
+import type { PipConfig } from '../types'
+
 export interface CanvasCompositor {
   canvas: HTMLCanvasElement
   stream: MediaStream
+  capturePreviewFrame: (maxWidth: number) => string | null
   dispose: () => void
 }
 
@@ -9,6 +12,7 @@ export function createCanvasCompositor(
   cameraStream: MediaStream | null,
   maxW: number = 1920,
   maxH: number = 1080,
+  pipConfig?: PipConfig,
 ): CanvasCompositor {
   const screenTrack = screenStream.getVideoTracks()[0]
   const screenSettings = screenTrack.getSettings()
@@ -37,11 +41,14 @@ export function createCanvasCompositor(
     cameraVideo.play()
   }
 
-  const pipDiameter = 160
-  const pipMargin = 20
-  const pipX = w - pipDiameter - pipMargin
-  const pipY = h - pipDiameter - pipMargin
+  const pipDiameter = pipConfig ? Math.round(pipConfig.size * w) : 160
   const pipRadius = pipDiameter / 2
+  const pipX = pipConfig
+    ? Math.round(pipConfig.x * w - pipRadius)
+    : w - pipDiameter - 20
+  const pipY = pipConfig
+    ? Math.round(pipConfig.y * h - pipRadius)
+    : h - pipDiameter - 20
 
   const stream = canvas.captureStream(30)
 
@@ -79,9 +86,22 @@ export function createCanvasCompositor(
     }
   }, 33)
 
+  const previewCanvas = document.createElement('canvas')
+  const previewCtx = previewCanvas.getContext('2d')!
+
   return {
     canvas,
     stream,
+    capturePreviewFrame(maxWidth: number): string | null {
+      if (w === 0 || h === 0) return null
+      const scale = Math.min(1, maxWidth / w)
+      const pw = Math.round(w * scale)
+      const ph = Math.round(h * scale)
+      if (previewCanvas.width !== pw) previewCanvas.width = pw
+      if (previewCanvas.height !== ph) previewCanvas.height = ph
+      previewCtx.drawImage(canvas, 0, 0, pw, ph)
+      return previewCanvas.toDataURL('image/jpeg', 0.5)
+    },
     dispose() {
       clearInterval(interval)
       screenVideo.pause()

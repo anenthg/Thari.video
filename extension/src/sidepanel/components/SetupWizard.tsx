@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import type { AppSettings, BackendProvider } from '../../lib/types'
+import { requestProviderPermissions } from '../../lib/hostPermissions'
 
 interface Props {
   onConnect: (settings: AppSettings) => void
@@ -80,6 +81,14 @@ export default function SetupWizard({ onConnect }: Props) {
       return
     }
 
+    // Request host permissions for Firebase APIs
+    const granted = await requestProviderPermissions('firebase')
+    if (!granted) {
+      setError('Host permissions are required to connect to Firebase. Please allow when prompted.')
+      setConnecting(false)
+      return
+    }
+
     try {
       const result = await Promise.race([
         chrome.runtime.sendMessage({ type: 'VALIDATE_CONNECTION', provider: 'firebase', credential: serviceAccountJson }) as Promise<{ ok: boolean; projectId?: string; error?: string }>,
@@ -119,6 +128,14 @@ export default function SetupWizard({ onConnect }: Props) {
     const key = convexDeployKey.trim()
     if (!key) {
       setError('Please paste your Convex deploy key.')
+      setConnecting(false)
+      return
+    }
+
+    // Request host permissions for Convex APIs
+    const granted = await requestProviderPermissions('convex')
+    if (!granted) {
+      setError('Host permissions are required to connect to Convex. Please allow when prompted.')
       setConnecting(false)
       return
     }
@@ -178,6 +195,14 @@ export default function SetupWizard({ onConnect }: Props) {
 
     if (!/^https?:\/\/[^.]+\.supabase\.co\/?$/.test(url)) {
       setError('Invalid Project URL. Expected format: https://<project-ref>.supabase.co')
+      setConnecting(false)
+      return
+    }
+
+    // Request host permissions for Supabase APIs
+    const granted = await requestProviderPermissions('supabase')
+    if (!granted) {
+      setError('Host permissions are required to connect to Supabase. Please allow when prompted.')
       setConnecting(false)
       return
     }

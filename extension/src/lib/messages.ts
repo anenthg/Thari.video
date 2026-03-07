@@ -1,4 +1,4 @@
-import type { AppSettings, RecordingPhase, Video } from './types'
+import type { AppSettings, PipConfig, RecordingPhase, Video } from './types'
 import type { ProvisioningStep } from './provisioning/types'
 
 // ─── Side Panel → Service Worker ────────────────────────────────────────────
@@ -10,6 +10,7 @@ export interface StartRecordingMessage {
   hd: boolean
   cameraDeviceId?: string
   micDeviceId?: string
+  pipConfig?: PipConfig
 }
 
 export interface StopRecordingMessage {
@@ -73,6 +74,7 @@ export interface CaptureAndRecordMessage {
   hd: boolean
   cameraDeviceId?: string
   micDeviceId?: string
+  pipConfig?: PipConfig
 }
 
 export interface StopCaptureMessage {
@@ -98,6 +100,11 @@ export interface RecordingStoppedMessage {
 export interface ElapsedUpdateMessage {
   type: 'ELAPSED_UPDATE'
   seconds: number
+}
+
+export interface PreviewFrameMessage {
+  type: 'PREVIEW_FRAME'
+  dataUrl: string
 }
 
 // ─── Service Worker → Side Panel ────────────────────────────────────────────
@@ -160,6 +167,7 @@ export type OffscreenResponse =
   | CaptureStartedMessage
   | RecordingStoppedMessage
   | ElapsedUpdateMessage
+  | PreviewFrameMessage
 
 export type ServiceWorkerMessage =
   | StateUpdateMessage

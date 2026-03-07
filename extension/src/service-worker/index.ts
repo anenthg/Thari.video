@@ -1,4 +1,4 @@
-import type { AppSettings, RecordingPhase } from '../lib/types'
+import type { AppSettings, PipConfig, RecordingPhase } from '../lib/types'
 import type {
   ExtensionMessage,
   StateUpdateMessage,
@@ -173,7 +173,7 @@ async function handleMessage(message: ExtensionMessage): Promise<unknown> {
 
     // ─── Recording ────────────────────────────────────
     case 'START_RECORDING':
-      return handleStartRecording(message.camera, message.mic, message.hd, message.cameraDeviceId, message.micDeviceId)
+      return handleStartRecording(message.camera, message.mic, message.hd, message.cameraDeviceId, message.micDeviceId, message.pipConfig)
 
     case 'STOP_RECORDING':
       return handleStopRecording()
@@ -189,6 +189,10 @@ async function handleMessage(message: ExtensionMessage): Promise<unknown> {
 
     case 'ELAPSED_UPDATE':
       updateState({ elapsed: message.seconds })
+      return { ok: true }
+
+    case 'PREVIEW_FRAME':
+      chrome.runtime.sendMessage(message).catch(() => {})
       return { ok: true }
 
     case 'RECORDING_STOPPED':
@@ -269,6 +273,7 @@ async function handleStartRecording(
   hd: boolean,
   cameraDeviceId?: string,
   micDeviceId?: string,
+  pipConfig?: PipConfig,
 ): Promise<unknown> {
   try {
     startKeepAlive()
@@ -289,6 +294,7 @@ async function handleStartRecording(
       hd,
       cameraDeviceId,
       micDeviceId,
+      pipConfig,
     })
 
     if (result && !result.ok) {
@@ -426,7 +432,9 @@ async function handleUpload(
 
 async function handleListVideos(): Promise<unknown> {
   await loadSettings()
-  return dbQuery(settings, 'videos', 'created_at', 'desc')
+  const result = await dbQuery(settings, 'videos', 'created_at', 'desc')
+  if (!result.ok) return { error: result.error }
+  return { videos: result.data || [] }
 }
 
 async function handleDeleteVideo(shortCode: string): Promise<unknown> {

@@ -1050,6 +1050,13 @@ export default function PricingPage() {
           </span>
           <span className="font-mono text-xs text-[var(--cotton)]/25">
             Estimates based on VP9/WebM at stated bitrates
+            {" · "}
+            <Link
+              href="/privacy"
+              className="transition-colors hover:text-[var(--cotton)]/40"
+            >
+              Privacy
+            </Link>
           </span>
         </div>
       </footer>

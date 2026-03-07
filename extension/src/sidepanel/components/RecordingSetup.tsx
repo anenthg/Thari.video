@@ -32,7 +32,11 @@ async function enumerateDevices(): Promise<{ cameras: DeviceInfo[]; mics: Device
   }
 }
 
-export default function RecordingSetup() {
+interface Props {
+  onStart: (config: { camera: boolean; mic: boolean; hd: boolean; cameraDeviceId?: string; micDeviceId?: string }) => void
+}
+
+export default function RecordingSetup({ onStart }: Props) {
   const [camera, setCamera] = useState(true)
   const [mic, setMic] = useState(true)
   const [hd, setHd] = useState(false)
@@ -132,8 +136,7 @@ export default function RecordingSetup() {
   }
 
   const handleStart = () => {
-    chrome.runtime.sendMessage({
-      type: 'START_RECORDING',
+    onStart({
       camera: camera && cameraGranted,
       mic: mic && micGranted,
       hd,

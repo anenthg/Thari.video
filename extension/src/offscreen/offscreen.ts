@@ -1,3 +1,4 @@
+import type { PipConfig } from '../lib/types'
 import { createCanvasCompositor, type CanvasCompositor } from '../lib/recording/canvasCompositor'
 import { createAudioMixer, type AudioMixer } from '../lib/recording/audioMixer'
 import { createRecorder, type Recorder } from '../lib/recording/recorder'
@@ -7,6 +8,7 @@ let compositor: CanvasCompositor | null = null
 let mixer: AudioMixer | null = null
 let recorder: Recorder | null = null
 let elapsedTimer: ReturnType<typeof setInterval> | null = null
+let previewTimer: ReturnType<typeof setInterval> | null = null
 
 function debugLog(msg: string) {
   console.log(`[offscreen] ${msg}`)
@@ -77,6 +79,7 @@ async function handleCaptureAndRecord(options: {
   hd: boolean
   cameraDeviceId?: string
   micDeviceId?: string
+  pipConfig?: PipConfig
 }) {
   const maxW = options.hd ? 1920 : 1280
   const maxH = options.hd ? 1080 : 720
@@ -131,7 +134,7 @@ async function handleCaptureAndRecord(options: {
 
   // Create compositor
   debugLog('Creating canvas compositor...')
-  compositor = createCanvasCompositor(screenStream, cameraStream, maxW, maxH)
+  compositor = createCanvasCompositor(screenStream, cameraStream, maxW, maxH, options.pipConfig)
   describeStream('compositor.stream', compositor.stream).forEach(debugLog)
 
   // Create audio mixer
@@ -161,10 +164,33 @@ async function handleCaptureAndRecord(options: {
     }
   }, 1000)
 
+  // Start preview frame stream (5fps)
+  startPreviewStream()
+
   chrome.runtime.sendMessage({ type: 'CAPTURE_STARTED' })
 }
 
+function startPreviewStream() {
+  stopPreviewStream()
+  previewTimer = setInterval(() => {
+    if (!compositor) return
+    const dataUrl = compositor.capturePreviewFrame(400)
+    if (dataUrl) {
+      chrome.runtime.sendMessage({ type: 'PREVIEW_FRAME', dataUrl }).catch(() => {})
+    }
+  }, 200)
+}
+
+function stopPreviewStream() {
+  if (previewTimer) {
+    clearInterval(previewTimer)
+    previewTimer = null
+  }
+}
+
 async function handleStopCapture() {
+  stopPreviewStream()
+
   if (elapsedTimer) {
     clearInterval(elapsedTimer)
     elapsedTimer = null

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { AppSettings, Video } from '../../lib/types'
 import type { ExtensionMessage } from '../../lib/messages'
+import { getShareURL } from '../../lib/backend/index'
 import { CheckIcon, ClockIcon, EyeIcon, FolderIcon, LinkIcon, TrashIcon } from './icons'
 
 interface Props {
@@ -31,22 +32,6 @@ function formatRelativeDate(dateStr: string): string {
   return date.toLocaleDateString()
 }
 
-function getShareURL(settings: AppSettings, shortCode: string): string {
-  const provider = settings.provider || 'firebase'
-  let projectId = ''
-  if (provider === 'supabase') {
-    projectId = settings.supabaseProjectRef || ''
-  } else if (provider === 'convex') {
-    projectId = settings.convexDeploymentName || ''
-  } else {
-    projectId = settings.firebaseProjectId || ''
-  }
-  const encoded = btoa(`${provider}-${projectId}`)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
-  return `https://openloom.live/v/${encoded}/${shortCode}`
-}
 
 export default function Library({ settings }: Props) {
   const [videos, setVideos] = useState<Video[]>([])

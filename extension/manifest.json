@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Self-hosted screen recorder with camera PiP and shareable links",
   "permissions": ["sidePanel", "offscreen", "storage", "unlimitedStorage", "alarms"],
-  "host_permissions": [
+  "optional_host_permissions": [
     "https://*.googleapis.com/*",
     "https://*.firebasestorage.app/*",
     "https://*.appspot.com/*",

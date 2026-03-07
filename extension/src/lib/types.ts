@@ -56,3 +56,15 @@ export type RecordingPhase =
   | 'recording'
   | 'review'
   | 'uploading'
+
+export interface PipConfig {
+  x: number // normalized 0-1
+  y: number // normalized 0-1
+  size: number // normalized 0-1
+}
+
+export const DEFAULT_PIP_CONFIG: PipConfig = {
+  x: 0.85,
+  y: 0.85,
+  size: 0.12,
+}

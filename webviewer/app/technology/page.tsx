@@ -1015,6 +1015,13 @@ export default function TechnologyPage() {
             >
               @anenth
             </a>
+            {" · "}
+            <a
+              href="/privacy"
+              className="transition-colors hover:text-[var(--cotton)]/40"
+            >
+              Privacy
+            </a>
           </span>
         </div>
       </footer>
