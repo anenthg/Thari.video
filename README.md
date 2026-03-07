@@ -4,8 +4,6 @@ Open-source, self-hosted alternative to Loom. Record your screen, share a link, 
 
 Your recordings live on **your own Supabase project** — no third-party servers, no vendor lock-in.
 
-> *thari (தறி)* — Tamil for loom. Design inspired by [Bhavani Jamakkalam](https://en.wikipedia.org/wiki/Bhavani_Jamakkalam).
-
 ---
 
 ## How it works
