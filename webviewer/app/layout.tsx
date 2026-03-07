@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import Link from "next/link";
 import HeaderCTA from "./HeaderCTA";
 import HeaderStripe from "./HeaderStripe";
@@ -60,6 +61,22 @@ export default function RootLayout({
           <HeaderStripe />
         </header>
         {children}
+
+        {/* GoatCounter — privacy-friendly, cookieless analytics */}
+        {/* Excludes /v/ video player pages (other people's content) */}
+        <Script id="goatcounter-config" strategy="afterInteractive">
+          {`window.goatcounter = {
+            path: function(p) {
+              if (p.startsWith('/v/')) return null;
+              return p;
+            }
+          }`}
+        </Script>
+        <Script
+          data-goatcounter="https://openloom.goatcounter.com/count"
+          src="//gc.zgo.at/count.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
