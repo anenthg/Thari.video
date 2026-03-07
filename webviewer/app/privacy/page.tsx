@@ -35,7 +35,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="mt-4 text-lg text-[var(--cotton)]/60">
-            Last updated: March 7, 2025
+            Last updated: March 7, 2026
           </p>
         </div>
       </section>
@@ -69,8 +69,10 @@ export default function PrivacyPage() {
             </p>
             <ul className="list-disc space-y-2 pl-6">
               <li>
-                <strong>No analytics or telemetry</strong> — we do not track
-                usage, page views, or feature engagement.
+                <strong>No analytics or telemetry in the extension</strong> — the
+                Chrome extension does not track usage, page views, or feature
+                engagement. (The openloom.live marketing website uses
+                privacy-friendly analytics — see below.)
               </li>
               <li>
                 <strong>No account system</strong> — OpenLoom does not require
@@ -214,6 +216,41 @@ export default function PrivacyPage() {
               shared links. Passwords are used to derive an AES-256-GCM
               encryption key client-side. The password is never transmitted or
               stored.
+            </p>
+          </div>
+
+          {/* Website Analytics */}
+          <div>
+            <h2 className="mb-4 font-sans text-2xl font-bold text-[var(--cotton)]">
+              Website Analytics
+            </h2>
+            <p className="mb-4">
+              The openloom.live marketing pages (home, technology, pricing, and
+              this privacy page) use{" "}
+              <a
+                href="https://www.goatcounter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-b border-dotted border-[var(--cotton)]/30 transition-colors hover:text-[var(--cotton)]"
+              >
+                GoatCounter
+              </a>
+              , an open-source, privacy-friendly analytics tool. GoatCounter:
+            </p>
+            <ul className="list-disc space-y-2 pl-6">
+              <li>Does not use cookies</li>
+              <li>Does not collect personal data or IP addresses</li>
+              <li>Does not require a consent banner</li>
+              <li>Is fully GDPR-compliant</li>
+            </ul>
+            <p className="mt-4">
+              <strong>Video player pages are excluded.</strong> When someone
+              watches a shared recording at{" "}
+              <code className="rounded bg-[var(--cotton)]/10 px-1.5 py-0.5 font-mono text-sm">
+                openloom.live/v/...
+              </code>
+              , no analytics script runs. We do not track who watches your
+              videos or how often they are viewed.
             </p>
           </div>
 
