@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "OpenLoom",
-  "version": "0.1.0",
+  "version": "0.6.0",
   "description": "Self-hosted screen recorder with camera PiP and shareable links",
   "permissions": ["sidePanel", "offscreen", "storage", "unlimitedStorage", "alarms"],
   "optional_host_permissions": [

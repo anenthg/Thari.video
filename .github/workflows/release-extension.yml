@@ -31,6 +31,11 @@ jobs:
         id: version
         run: echo "version=${GITHUB_REF_NAME#ext-v}" >> "$GITHUB_OUTPUT"
 
+      - name: Patch manifest.json version
+        run: |
+          cd extension/dist
+          jq --arg v "${{ steps.version.outputs.version }}" '.version = $v' manifest.json > manifest.tmp && mv manifest.tmp manifest.json
+
       - name: Create release zip
         run: |
           cd dist
