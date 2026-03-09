@@ -2,6 +2,7 @@ export interface Recorder {
   start: () => void
   stop: () => Promise<Blob>
   dispose: () => void
+  getSize: () => number
 }
 
 export function createRecorder(
@@ -25,9 +26,13 @@ export function createRecorder(
   })
 
   const chunks: Blob[] = []
+  let accumulatedSize = 0
 
   mediaRecorder.ondataavailable = (e) => {
-    if (e.data.size > 0) chunks.push(e.data)
+    if (e.data.size > 0) {
+      chunks.push(e.data)
+      accumulatedSize += e.data.size
+    }
   }
 
   mediaRecorder.onerror = (e) => {
@@ -43,6 +48,7 @@ export function createRecorder(
   return {
     start() {
       chunks.length = 0
+      accumulatedSize = 0
       mediaRecorder.start(1000)
     },
     stop() {
@@ -53,6 +59,9 @@ export function createRecorder(
         }
         mediaRecorder.stop()
       })
+    },
+    getSize() {
+      return accumulatedSize
     },
     dispose() {
       if (mediaRecorder.state !== 'inactive') {

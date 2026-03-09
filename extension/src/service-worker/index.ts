@@ -22,6 +22,8 @@ interface AppState {
   error: string | null
   shareURL: string | null
   uploadProgress: number
+  isHd: boolean
+  recordingWarning: string | null
 }
 
 let state: AppState = {
@@ -31,6 +33,8 @@ let state: AppState = {
   error: null,
   shareURL: null,
   uploadProgress: 0,
+  isHd: false,
+  recordingWarning: null,
 }
 
 let settings: AppSettings = {}
@@ -200,9 +204,31 @@ async function handleMessage(message: ExtensionMessage): Promise<unknown> {
       updateState({ phase: 'recording', elapsed: 0 })
       return { ok: true }
 
-    case 'ELAPSED_UPDATE':
-      updateState({ elapsed: message.seconds })
+    case 'ELAPSED_UPDATE': {
+      // Use detected limit (from provisioning) or fall back to free-tier 50 MB
+      const sizeLimit = settings.supabaseFileSizeLimit ?? (settings.provider === 'supabase' ? 52_428_800 : 524_288_000)
+      const recordedBytes: number = message.recordedBytes ?? 0
+      const remaining = sizeLimit - recordedBytes
+      const elapsed: number = message.seconds
+
+      // Estimate bytes/sec from actual data so far for time-remaining projection
+      const actualBytesPerSec = elapsed > 0 ? recordedBytes / elapsed : (state.isHd ? 312_500 : 156_250)
+      const secondsLeft = actualBytesPerSec > 0 ? Math.floor(remaining / actualBytesPerSec) : Infinity
+
+      let warning: string | null = null
+      if (secondsLeft <= 60 && secondsLeft > 0) {
+        warning = `Recording will auto-stop in ~${secondsLeft}s (upload size limit)`
+      }
+
+      updateState({ elapsed, recordingWarning: warning })
+
+      // Auto-stop when actual size hits 95% of limit (leave margin for final chunks)
+      if (recordedBytes >= sizeLimit * 0.95) {
+        handleStopRecording()
+      }
+
       return { ok: true }
+    }
 
     case 'PREVIEW_FRAME':
     case 'MIC_LEVEL':
@@ -275,6 +301,11 @@ async function handleDeployBackend(provider: string): Promise<unknown> {
       ok = await deploySupabase(settings, onProgress)
     }
 
+    // Persist any settings mutated during deploy (e.g. supabaseFileSizeLimit)
+    if (ok) {
+      await chrome.storage.local.set({ settings })
+    }
+
     return { ok }
   } finally {
     stopKeepAlive()
@@ -291,7 +322,7 @@ async function handleStartRecording(
 ): Promise<unknown> {
   try {
     startKeepAlive()
-    updateState({ phase: 'preparing', error: null })
+    updateState({ phase: 'preparing', error: null, isHd: hd, recordingWarning: null })
 
     // Create offscreen document
     await ensureOffscreenDocument()
@@ -359,7 +390,6 @@ async function handleUpload(
     if (!blob) {
       throw new Error('Recording blob not found in storage')
     }
-    const blobData = await blob.arrayBuffer()
 
     updateState({ uploadProgress: 30 })
 
@@ -370,15 +400,14 @@ async function handleUpload(
     const uploadResult = await fileUpload(
       settings,
       remotePath,
-      blobData,
+      blob,
       contentType,
+      (fraction) => updateState({ uploadProgress: Math.round(30 + fraction * 60) }),
     )
 
     if (!uploadResult.ok) {
       throw new Error(uploadResult.error || 'Upload failed')
     }
-
-    updateState({ uploadProgress: 70 })
 
     // Determine storage URL
     const provider = settings.provider || 'firebase'

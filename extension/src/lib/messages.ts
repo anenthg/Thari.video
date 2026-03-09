@@ -108,6 +108,7 @@ export interface RecordingStoppedMessage {
 export interface ElapsedUpdateMessage {
   type: 'ELAPSED_UPDATE'
   seconds: number
+  recordedBytes: number
 }
 
 export interface PreviewFrameMessage {
@@ -131,6 +132,7 @@ export interface StateUpdateMessage {
     error: string | null
     shareURL: string | null
     uploadProgress: number
+    recordingWarning: string | null
   }
   settings?: AppSettings
 }

@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { CameraIcon, CameraOffIcon, MicIcon, MicOffIcon, HDIcon, RecordIcon } from './icons'
+import { loadPreferences, savePreferences } from '../../lib/preferences'
+import type { AppSettings } from '../../lib/types'
 
 type PermState = 'unknown' | 'granted' | 'denied' | 'prompt'
 
@@ -42,10 +44,11 @@ async function enumerateDevices(): Promise<{ cameras: DeviceInfo[]; mics: Device
 }
 
 interface Props {
+  settings: AppSettings
   onStart: (config: { camera: boolean; mic: boolean; hd: boolean; cameraDeviceId?: string; micDeviceId?: string }) => void
 }
 
-export default function RecordingSetup({ onStart }: Props) {
+export default function RecordingSetup({ settings, onStart }: Props) {
   const [camera, setCamera] = useState(true)
   const [mic, setMic] = useState(true)
   const [hd, setHd] = useState(false)
@@ -53,11 +56,16 @@ export default function RecordingSetup({ onStart }: Props) {
   const [micPerm, setMicPerm] = useState<PermState>('unknown')
   const [waitingForPermission, setWaitingForPermission] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [prefsLoaded, setPrefsLoaded] = useState(false)
 
   const [cameras, setCameras] = useState<DeviceInfo[]>([])
   const [mics, setMics] = useState<DeviceInfo[]>([])
   const [selectedCamera, setSelectedCamera] = useState<string>('')
   const [selectedMic, setSelectedMic] = useState<string>('')
+
+  // Stash saved device IDs so refreshDevices can use them
+  const savedCameraId = useRef<string | undefined>(undefined)
+  const savedMicId = useRef<string | undefined>(undefined)
 
   const refreshPermissions = useCallback(async () => {
     const [cam, microphone] = await Promise.all([
@@ -72,10 +80,30 @@ export default function RecordingSetup({ onStart }: Props) {
     const { cameras: cams, mics: ms } = await enumerateDevices()
     setCameras(cams)
     setMics(ms)
-    // Auto-select first device if none selected
-    if (cams.length > 0 && !selectedCamera) setSelectedCamera(cams[0].deviceId)
-    if (ms.length > 0 && !selectedMic) setSelectedMic(ms[0].deviceId)
+    // Use saved device if it exists in the list, otherwise fall back to first
+    if (cams.length > 0 && !selectedCamera) {
+      const saved = savedCameraId.current
+      const match = saved && cams.find((c) => c.deviceId === saved)
+      setSelectedCamera(match ? match.deviceId : cams[0].deviceId)
+    }
+    if (ms.length > 0 && !selectedMic) {
+      const saved = savedMicId.current
+      const match = saved && ms.find((m) => m.deviceId === saved)
+      setSelectedMic(match ? match.deviceId : ms[0].deviceId)
+    }
   }, [selectedCamera, selectedMic])
+
+  // Load saved preferences on mount
+  useEffect(() => {
+    loadPreferences().then((prefs) => {
+      if (prefs.camera !== undefined) setCamera(prefs.camera)
+      if (prefs.mic !== undefined) setMic(prefs.mic)
+      if (prefs.hd !== undefined) setHd(prefs.hd)
+      savedCameraId.current = prefs.cameraDeviceId
+      savedMicId.current = prefs.micDeviceId
+      setPrefsLoaded(true)
+    })
+  }, [])
 
   // Check permissions and enumerate devices on mount
   useEffect(() => {
@@ -148,6 +176,13 @@ export default function RecordingSetup({ onStart }: Props) {
   }
 
   const handleStart = () => {
+    savePreferences({
+      camera,
+      mic,
+      hd,
+      cameraDeviceId: selectedCamera || undefined,
+      micDeviceId: selectedMic || undefined,
+    })
     onStart({
       camera: camera && cameraGranted,
       mic: mic && micGranted,
@@ -157,8 +192,23 @@ export default function RecordingSetup({ onStart }: Props) {
     })
   }
 
+  const maxDuration = useMemo(() => {
+    if (settings.provider !== 'supabase') return null
+    const limit = settings.supabaseFileSizeLimit ?? 52_428_800 // free tier default
+    // ~50% of theoretical max bitrate — screen recordings use VBR and
+    // typically compress well below the target bitrate
+    const bytesPerSec = hd ? 312_500 : 156_250
+    const secs = Math.floor(limit / bytesPerSec)
+    if (secs >= 600) return null // paid plan: 10+ min, no need to warn
+    const m = Math.floor(secs / 60)
+    const s = secs % 60
+    return `~${m}m ${s}s`
+  }, [settings.provider, settings.supabaseFileSizeLimit, hd])
+
   const selectedCameraLabel = cameras.find((c) => c.deviceId === selectedCamera)?.label
   const selectedMicLabel = mics.find((m) => m.deviceId === selectedMic)?.label
+
+  if (!prefsLoaded) return null
 
   return (
     <div className="flex flex-col items-center justify-center h-full p-6 overflow-y-auto">
@@ -303,6 +353,13 @@ export default function RecordingSetup({ onStart }: Props) {
         <p className="mb-4 text-xs text-zinc-400 text-center max-w-xs">
           A tab has opened — please allow access there.
         </p>
+      )}
+
+      {maxDuration && (
+        <div className="mb-3 text-center">
+          <p className="text-sm text-zinc-300">{maxDuration} <span className="text-zinc-400">max per video</span></p>
+          <p className="text-[11px] text-zinc-500">Supabase free plan limit</p>
+        </div>
       )}
 
       {/* Start recording button */}

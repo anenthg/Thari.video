@@ -98,16 +98,16 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
       {
         label: "HD Mode",
         color: "var(--crimson)",
-        value: "~33m",
+        value: "~1h",
         subtitle: "of recording for free",
-        details: ["1920 \u00d7 1080 \u00b7 5 Mbps", "~30 MB / minute"],
+        details: ["1920 \u00d7 1080 \u00b7 5 Mbps target", "~15 MB / minute typical"],
       },
       {
         label: "Non-HD Mode",
         color: "var(--mustard)",
-        value: "~1h",
+        value: "~2h",
         subtitle: "of recording for free",
-        details: ["1280 \u00d7 720 \u00b7 2.5 Mbps", "~15 MB / minute"],
+        details: ["1280 \u00d7 720 \u00b7 2.5 Mbps target", "~7.5 MB / minute typical"],
       },
       {
         label: "Beyond Free",
@@ -164,10 +164,10 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
       description:
         "2 GB of free egress per month is limited. Videos will eat through this quickly.",
       rows: [
-        { video: "2 min HD (~60 MB)", views: "~33" },
-        { video: "5 min HD (~150 MB)", views: "~13" },
-        { video: "5 min non-HD (~75 MB)", views: "~26" },
-        { video: "10 min HD (~300 MB)", views: "~6" },
+        { video: "2 min HD (~30 MB)", views: "~66" },
+        { video: "5 min HD (~75 MB)", views: "~26" },
+        { video: "5 min non-HD (~37 MB)", views: "~54" },
+        { video: "10 min HD (~150 MB)", views: "~13" },
       ],
     },
     tldr: {
@@ -176,7 +176,7 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
           Supabase&apos;s free tier gives you{" "}
           <span className="text-[var(--cotton)]">1 GB of storage</span> and{" "}
           <span className="text-[var(--cotton)]">2 GB of egress</span>. That&apos;s
-          about 33 minutes of HD recording and very limited viewing. Great for
+          about 1 hour of HD recording and limited viewing. Great for
           testing, but you&apos;ll likely need the Pro plan ($25/mo) for real
           usage.
         </>
@@ -212,16 +212,16 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
       {
         label: "HD Mode",
         color: "var(--crimson)",
-        value: "~33m",
+        value: "~1h",
         subtitle: "of recording for free",
-        details: ["1920 \u00d7 1080 \u00b7 5 Mbps", "~30 MB / minute"],
+        details: ["1920 \u00d7 1080 \u00b7 5 Mbps target", "~15 MB / minute typical"],
       },
       {
         label: "Non-HD Mode",
         color: "var(--mustard)",
-        value: "~1h",
+        value: "~2h",
         subtitle: "of recording for free",
-        details: ["1280 \u00d7 720 \u00b7 2.5 Mbps", "~15 MB / minute"],
+        details: ["1280 \u00d7 720 \u00b7 2.5 Mbps target", "~7.5 MB / minute typical"],
       },
       {
         label: "Beyond Free",
@@ -274,10 +274,10 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
       description:
         "1 GB of free egress per month is very limited. You\u2019ll hit this quickly with video content.",
       rows: [
-        { video: "2 min HD (~60 MB)", views: "~16" },
-        { video: "5 min HD (~150 MB)", views: "~6" },
-        { video: "5 min non-HD (~75 MB)", views: "~13" },
-        { video: "10 min HD (~300 MB)", views: "~3" },
+        { video: "2 min HD (~30 MB)", views: "~33" },
+        { video: "5 min HD (~75 MB)", views: "~13" },
+        { video: "5 min non-HD (~37 MB)", views: "~27" },
+        { video: "10 min HD (~150 MB)", views: "~6" },
       ],
     },
     tldr: {
@@ -286,7 +286,7 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
           Convex&apos;s free tier gives you{" "}
           <span className="text-[var(--cotton)]">1 GB of storage</span> and{" "}
           <span className="text-[var(--cotton)]">1 GB of egress</span>. That&apos;s
-          about 33 minutes of HD recording and very few free views. Best for
+          about 1 hour of HD recording and very few free views. Best for
           prototyping — real usage needs the Pro plan ($25/dev/mo).
         </>
       ),
@@ -321,16 +321,16 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
       {
         label: "HD Mode",
         color: "var(--crimson)",
-        value: "~3h",
+        value: "~5.5h",
         subtitle: "of recording for free",
-        details: ["1920 \u00d7 1080 \u00b7 5 Mbps", "~30 MB / minute"],
+        details: ["1920 \u00d7 1080 \u00b7 5 Mbps target", "~15 MB / minute typical"],
       },
       {
         label: "Non-HD Mode",
         color: "var(--mustard)",
-        value: "~6h",
+        value: "~11h",
         subtitle: "of recording for free",
-        details: ["1280 \u00d7 720 \u00b7 2.5 Mbps", "~15 MB / minute"],
+        details: ["1280 \u00d7 720 \u00b7 2.5 Mbps target", "~7.5 MB / minute typical"],
       },
       {
         label: "Beyond Free",
@@ -388,10 +388,10 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
       description:
         "100 GB of free egress per month means your videos can be watched plenty of times before you pay a cent.",
       rows: [
-        { video: "2 min HD (~60 MB)", views: "~1,600" },
-        { video: "5 min HD (~150 MB)", views: "~660" },
-        { video: "5 min non-HD (~75 MB)", views: "~1,300" },
-        { video: "10 min HD (~300 MB)", views: "~330" },
+        { video: "2 min HD (~30 MB)", views: "~3,300" },
+        { video: "5 min HD (~75 MB)", views: "~1,300" },
+        { video: "5 min non-HD (~37 MB)", views: "~2,700" },
+        { video: "10 min HD (~150 MB)", views: "~660" },
       ],
     },
     tldr: {
@@ -399,8 +399,8 @@ const PROVIDERS: Record<Provider, ProviderConfig> = {
         <>
           Storage is the only limit that matters. Pick a US region, get 5 GB
           free. That&apos;s{" "}
-          <span className="text-[var(--cotton)]">3 hours of HD</span> or{" "}
-          <span className="text-[var(--cotton)]">6 hours of 720p</span>{" "}
+          <span className="text-[var(--cotton)]">5.5 hours of HD</span> or{" "}
+          <span className="text-[var(--cotton)]">11 hours of 720p</span>{" "}
           recording without spending anything. Everything else — Firestore,
           Functions, egress — is free for normal usage.
         </>

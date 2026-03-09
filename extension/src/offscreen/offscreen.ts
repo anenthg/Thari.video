@@ -4,6 +4,30 @@ import { createAudioMixer, type AudioMixer } from '../lib/recording/audioMixer'
 import { createRecorder, type Recorder } from '../lib/recording/recorder'
 import { saveBlob } from '../lib/idb'
 
+let uiAudioCtx: AudioContext | null = null
+
+function playTone(frequency: number, durationMs: number): void {
+  if (!uiAudioCtx) uiAudioCtx = new AudioContext()
+  const osc = uiAudioCtx.createOscillator()
+  const gain = uiAudioCtx.createGain()
+  osc.type = 'sine'
+  osc.frequency.value = frequency
+  gain.gain.value = 0.18
+  osc.connect(gain)
+  gain.connect(uiAudioCtx.destination)
+  const now = uiAudioCtx.currentTime
+  osc.start(now)
+  gain.gain.setValueAtTime(0.18, now + durationMs / 1000 - 0.02)
+  gain.gain.linearRampToValueAtTime(0, now + durationMs / 1000)
+  osc.stop(now + durationMs / 1000)
+}
+
+function playCountdownBeeps(): void {
+  playTone(660, 150)
+  setTimeout(() => playTone(880, 150), 1000)
+  setTimeout(() => playTone(1100, 150), 2000)
+}
+
 let compositor: CanvasCompositor | null = null
 let mixer: AudioMixer | null = null
 let recorder: Recorder | null = null
@@ -157,6 +181,7 @@ async function handleCaptureAndRecord(options: {
   // Signal that display was selected and streams are ready
   debugLog('Display selected, waiting for BEGIN_RECORDING...')
   chrome.runtime.sendMessage({ type: 'DISPLAY_SELECTED' })
+  playCountdownBeeps()
 }
 
 function beginRecording() {
@@ -172,7 +197,8 @@ function beginRecording() {
   const startTime = Date.now()
   elapsedTimer = setInterval(() => {
     const seconds = Math.floor((Date.now() - startTime) / 1000)
-    chrome.runtime.sendMessage({ type: 'ELAPSED_UPDATE', seconds })
+    const recordedBytes = recorder?.getSize() ?? 0
+    chrome.runtime.sendMessage({ type: 'ELAPSED_UPDATE', seconds, recordedBytes })
 
     // Report audio levels every 2 seconds
     if (mixer && mixer.getDebugLevels && seconds % 2 === 0) {
@@ -223,6 +249,8 @@ function stopMicLevelStream() {
 }
 
 async function handleStopCapture() {
+  playTone(440, 200)
+
   stopPreviewStream()
   stopMicLevelStream()
 
@@ -250,6 +278,11 @@ async function handleStopCapture() {
   if (mixer) {
     mixer.dispose()
     mixer = null
+  }
+
+  if (uiAudioCtx) {
+    uiAudioCtx.close()
+    uiAudioCtx = null
   }
 
   chrome.runtime.sendMessage({ type: 'RECORDING_STOPPED', blobId })
