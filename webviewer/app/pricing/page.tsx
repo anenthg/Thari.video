@@ -1010,7 +1010,7 @@ export default function PricingPage() {
               href="/technology"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--cotton)]/15 px-6 py-3 text-base font-medium text-[var(--cotton)]/70 transition-all hover:border-[var(--cotton)]/30 hover:text-[var(--cotton)]"
             >
-              How it works
+              Architecture
               <svg
                 width="16"
                 height="16"
