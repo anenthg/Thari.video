@@ -4,6 +4,8 @@ Open-source, self-hosted alternative to Loom. Record your screen, share a link, 
 
 Your recordings live on **your own Supabase project** — no third-party servers, no vendor lock-in.
 
+[![OpenLoom Demo](webviewer/public/demo-poster.png)](https://openloom.live)
+
 ---
 
 ## How it works

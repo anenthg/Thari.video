@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import HeroCTA from "./ChromeExtensionButton";
 import Footer from "./Footer";
@@ -89,6 +89,43 @@ function useScrollReveal() {
   }, []);
 }
 
+function DemoVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  const handlePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.play().catch(() => {});
+    setPlaying(true);
+  };
+
+  return (
+    <div className="relative cursor-pointer" onClick={!playing ? handlePlay : undefined}>
+      <video
+        ref={videoRef}
+        className="w-full"
+        controls={playing}
+        preload="metadata"
+        playsInline
+        poster="/demo-poster.png"
+        onEnded={() => setPlaying(false)}
+      >
+        <source src="/demo.mp4" type="video/mp4" />
+      </video>
+      {!playing && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity hover:bg-black/30">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--crimson)] shadow-lg shadow-[var(--crimson)]/30 transition-transform hover:scale-110">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+              <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14Z" />
+            </svg>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function LandingPage() {
   useScrollReveal();
 
@@ -164,12 +201,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ---------------------------------------------------------------- */}
-      {/* GET STARTED — interactive tutorial tabs                          */}
-      {/* ---------------------------------------------------------------- */}
-      <GetStartedSection />
-
-      {/* PRODUCT MOCKUP (commented out)
+      {/* DEMO VIDEO */}
       <section className="relative bg-[var(--warp-indigo)] px-6 py-24">
         <div className="mx-auto max-w-4xl" data-reveal>
           <div className="overflow-hidden rounded-2xl border border-[var(--cotton)]/8 bg-[var(--warp-indigo)] shadow-2xl shadow-black/30">
@@ -178,21 +210,18 @@ export default function LandingPage() {
               <span className="h-3 w-3 rounded-full bg-[var(--mustard)]" />
               <span className="h-3 w-3 rounded-full bg-[var(--emerald)]" />
               <span className="ml-3 font-mono text-xs text-[var(--cotton)]/30">
-                openloom.live/v/abc123/48271
+                OpenLoom Demo
               </span>
             </div>
-            <div className="flex aspect-video items-center justify-center bg-black/30">
-              <div className="flex flex-col items-center gap-3 text-[var(--cotton)]/30">
-                <svg width="48" height="48" fill="none" viewBox="0 0 24 24">
-                  <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14Z" fill="currentColor" />
-                </svg>
-                <span className="text-sm">Your recording plays here</span>
-              </div>
-            </div>
+            <DemoVideo />
           </div>
         </div>
       </section>
-      */}
+
+      {/* ---------------------------------------------------------------- */}
+      {/* GET STARTED — interactive tutorial tabs                          */}
+      {/* ---------------------------------------------------------------- */}
+      <GetStartedSection />
 
       {/* ---------------------------------------------------------------- */}
       {/* FEATURES                                                         */}
