@@ -1,0 +1,81 @@
+---
+title: "Introducing OpenLoom: Self-Hosted Screen Recording for Developers"
+description: "An open-source, privacy-first alternative to Loom. Record your screen, store on your own Supabase, share instantly."
+date: "2026-03-20"
+author: "OpenLoom Team"
+tags: ["announcement", "open-source", "screen-recording"]
+---
+
+# Introducing OpenLoom
+
+Screen recording tools are everywhere, but they all want the same thing: your data on their servers, a monthly subscription, and eventually — lock-in.
+
+**OpenLoom is different.** It's a fully open-source screen recorder that stores videos on *your own* Supabase project. No central server. No tracking. No subscription required.
+
+## Why We Built This
+
+As developers, we record a lot:
+- Bug reproductions for teammates
+- Quick demos for PRs
+- Async standups
+- Documentation walkthroughs
+
+But existing tools felt wrong:
+- **Loom** is polished but expensive, and your videos live on their servers
+- **OBS** is powerful but overkill for a 30-second bug demo
+- **Native OS recording** gives you files to upload somewhere else
+
+We wanted the convenience of Loom with the ownership of self-hosting.
+
+## How It Works
+
+```
+Chrome Extension → Your Supabase Project → Web Viewer
+```
+
+1. **Click the extension** — pick a tab or window to record
+2. **Record** — with optional camera PiP and microphone
+3. **Upload** — video goes directly to your Supabase storage bucket
+4. **Share** — get an instant link, copied to clipboard
+
+The web viewer fetches directly from your Supabase. There's no OpenLoom server in between.
+
+## Features
+
+- **Screen + Camera PiP** — Drag to reposition, resize the camera overlay
+- **Microphone + system audio** — Live audio meter, mute toggle
+- **HD recording** — Up to 1080p with VP9/WebM encoding
+- **Password protection** — AES-256-GCM encryption for sensitive videos
+- **One-click setup** — Paste your Supabase connection string and the extension provisions everything
+
+## Tech Stack
+
+| Component | Stack |
+|-----------|-------|
+| Extension | TypeScript, React 19, Tailwind CSS 4, Vite |
+| Recording | getDisplayMedia, MediaRecorder (VP9/Opus) |
+| Web Viewer | Next.js 16, static export, GitHub Pages |
+| Backend | Supabase (Storage, PostgreSQL, Edge Functions) |
+
+## Get Started
+
+1. Download the extension from the [Releases page](https://github.com/anenthg/OpenLoom/releases/latest)
+2. Load it unpacked in Chrome
+3. Paste your Supabase connection string
+4. Record your first video
+
+The extension handles provisioning automatically — storage bucket, database tables, edge functions.
+
+## What's Next
+
+We're actively building:
+- Firefox extension
+- Desktop app (Electron) for full-screen capture
+- Team features (shared Supabase projects)
+- Embeddable player widget
+
+Follow the repo for updates: [github.com/anenthg/OpenLoom](https://github.com/anenthg/OpenLoom)
+
+---
+
+OpenLoom is MIT licensed. Your recordings, your infrastructure, your rules.

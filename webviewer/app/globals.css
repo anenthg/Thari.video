@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "plyr/dist/plyr.css";
+@plugin "@tailwindcss/typography";
 
 :root {
   --warp-indigo: #1A1A2E;
