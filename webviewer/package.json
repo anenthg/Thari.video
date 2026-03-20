@@ -10,7 +10,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "gray-matter": "^4.0.3",
     "next": "^16",
+    "next-mdx-remote": "^5.0.0",
     "plyr": "^3.8",
     "react": "^19",
     "react-dom": "^19"
@@ -19,6 +21,7 @@
     "@eslint/eslintrc": "^3.3.4",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
