@@ -1,0 +1,156 @@
+---
+title: "OpenLoom vs Loom: What You Gain (and Lose)"
+description: "An honest comparison between OpenLoom and Loom. We built a self-hosted alternative — here's where it shines and where it falls short."
+date: "2026-03-21"
+author: "OpenLoom Team"
+tags: ["comparison", "loom", "self-hosting", "privacy"]
+---
+
+# OpenLoom vs Loom: What You Gain (and Lose)
+
+We built OpenLoom as a self-hosted alternative to Loom. But "alternative" doesn't mean "replacement for everyone." Here's an honest breakdown of what you gain — and what you give up — by switching.
+
+## The TL;DR
+
+| | OpenLoom | Loom |
+|---|---|---|
+| **Price** | Free (you pay for Supabase) | $15/user/month (Business) |
+| **Data ownership** | 100% yours | Loom's servers |
+| **Setup time** | 10 minutes | 30 seconds |
+| **Recording features** | Core essentials | Full-featured |
+| **Team collaboration** | Manual (shared Supabase) | Built-in |
+| **AI features** | None | Transcripts, summaries, chapters |
+| **Mobile apps** | No | Yes |
+
+## What You Gain with OpenLoom
+
+### 1. Complete Data Ownership
+
+Your recordings never touch a third-party server. They go directly from your browser to your Supabase project. No middleman. No "we may use your content to improve our services" clauses.
+
+This matters if you're recording:
+- Internal engineering discussions
+- Customer data walkthroughs
+- Compliance-sensitive demos
+- Anything you wouldn't put in a Google Doc
+
+### 2. No Per-Seat Pricing
+
+Loom Business costs $15/user/month. For a team of 20, that's $3,600/year.
+
+OpenLoom is free. Your only cost is Supabase:
+- **Free tier**: 1GB storage, 2GB bandwidth/month — enough for ~50 short videos
+- **Pro tier**: $25/month for 100GB storage, 250GB bandwidth — handles most teams
+
+For storage-heavy teams, you're looking at ~$25-50/month total, not per user.
+
+### 3. No Vendor Lock-In
+
+Loom's videos live on Loom. If they shut down, raise prices, or change terms — you scramble.
+
+OpenLoom videos are standard WebM files in a Supabase bucket. You can:
+- Download them anytime
+- Move to another S3-compatible storage
+- Self-host the viewer on your own domain
+- Fork the code and modify anything
+
+### 4. Privacy by Default
+
+OpenLoom has zero analytics, zero telemetry. The extension doesn't phone home. The viewer doesn't track who watched what.
+
+If you need viewer analytics, you add them yourself. Nothing is collected without your explicit choice.
+
+### 5. Full Source Access
+
+The entire stack is MIT licensed:
+- Extension code? [Read it](https://github.com/anenthg/OpenLoom/tree/main/extension).
+- Viewer code? [Read it](https://github.com/anenthg/OpenLoom/tree/main/webviewer).
+- Supabase edge functions? [Read them](https://github.com/anenthg/OpenLoom/tree/main/supabase).
+
+You can audit the security, customize the behavior, or contribute back.
+
+## What You Lose with OpenLoom
+
+Let's be real about the gaps.
+
+### 1. Setup Isn't Instant
+
+Loom: Sign up, install extension, record.
+
+OpenLoom: Create a Supabase project, get your connection string, install the extension, paste the config, wait for provisioning.
+
+It takes maybe 10 minutes, but it's not zero-friction. If you just want to record something *right now*, Loom wins.
+
+### 2. No AI Features
+
+Loom has:
+- Automatic transcripts
+- AI-generated summaries
+- Auto-chapters
+- Filler word removal
+
+OpenLoom has none of this. Your video is a video. If you want transcripts, you run Whisper yourself or use another service.
+
+We might add optional AI features later (connected to your own API keys), but today it's manual.
+
+### 3. No Mobile Recording
+
+Loom has iOS and Android apps for recording on the go.
+
+OpenLoom is Chrome-only. If you need to record from your phone, you'll need a separate tool.
+
+### 4. Team Features Are DIY
+
+Loom gives you workspaces, folders, permissions, comments, and emoji reactions.
+
+OpenLoom gives you a Supabase project. Want to share videos with your team? Share access to the same Supabase project. Want folders? Create them in your bucket. Want comments? Build them yourself (or wait for us to add them).
+
+It's powerful if you're comfortable with infrastructure. It's bare-bones if you want things to Just Work™.
+
+### 5. No Embeds or Integrations
+
+Loom embeds in Notion, Slack, Linear, and pretty much everywhere.
+
+OpenLoom gives you a link. It opens in a browser. That's it. If the platform doesn't unfurl video links, you're copying URLs.
+
+### 6. No Desktop App (Yet)
+
+Loom's desktop app can record your entire screen, including multiple monitors.
+
+OpenLoom uses Chrome's `getDisplayMedia`, which means:
+- You can record tabs or windows
+- Full-screen capture requires picking a screen each time
+- Some system audio scenarios are tricky
+
+We're planning an Electron app for proper desktop recording, but it's not here yet.
+
+## Who Should Use OpenLoom?
+
+**OpenLoom is a good fit if you:**
+- Care deeply about data ownership
+- Already use Supabase (or want to)
+- Have a technical team comfortable with self-hosting
+- Record sensitive content that shouldn't live on third-party servers
+- Want to avoid per-seat SaaS pricing
+- Like having full source access
+
+**Stick with Loom if you:**
+- Need instant setup with zero configuration
+- Rely on transcripts and AI summaries
+- Have non-technical team members who need polish
+- Use mobile recording frequently
+- Need rich integrations with other tools
+
+## The Bottom Line
+
+OpenLoom isn't trying to beat Loom on features. We're building for a different priority: **ownership**.
+
+If your videos are assets you want to control — where they're stored, who can access them, what happens to them long-term — OpenLoom gives you that.
+
+If you want the most polished, feature-rich recording experience and don't mind your data living elsewhere, Loom is excellent at what it does.
+
+Choose based on what matters more to you.
+
+---
+
+Curious? [Try OpenLoom](https://github.com/anenthg/OpenLoom) — it's free and open source.
